@@ -110,7 +110,22 @@ def cloudify(date, df):
         return summer_radiances(rad_mean)
 
 
+def read_wavenumber_slice(df, slice_range):
 
+    '''
+    Returns a truncated dataframe with only datapoints contained within the provided wavenumber range
+        Params
+        ==============
+        - df : Pandas dataframe
+        - slice_range: tuple of wavenumber (low,high), inclusive
+
+        Returns
+        ==============
+            Pandas dataframe
+    '''
+    truncated = df.loc[(df['wnum1'] >= slice_range[0]) & (df['wnum1'] <= slice_range[1])]
+
+    return truncated
 
 def histogram_plot(data, save_path):
 

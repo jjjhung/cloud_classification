@@ -157,9 +157,9 @@ def histogram_plot(data, save_path):
 def read_dataframes(years):
     xarrays, dataframes_C1, dataframes_cdf = [], {}, {}
 
-    if PARAMS['LOAD_DATA_FROM_SCRATCH']:
-        for year in years:
-            prepended_dir = str(year)
+    for year in years:
+        if PARAMS['LOAD_DATA_FROM_SCRATCH']:
+            prepended_dir = '../' + str(year)
             
             for file in os.listdir(prepended_dir):
                 # Use negative lookahead to ignore C1/C2 files
@@ -182,7 +182,7 @@ def read_dataframes(years):
                     pandified['base_time'] = pd.to_datetime(pandified['base_time'])
                     pandified2['base_time'] = pd.to_datetime(pandified2['base_time'])
 
-                    print(type(pandified))
+                    #print(type(pandified))
                     # if date in dataframes_C1:
                     #     dataframes_cdf[date] += [pandified]
                     #     dataframes_C1[date] += [pandified2]
@@ -190,12 +190,12 @@ def read_dataframes(years):
                     dataframes_cdf[date] = pandified
                     dataframes_C1[date] = pandified2
 
-        helpers.save_obj(dataframes_C1,"dataframes_C1")
-        helpers.save_obj(dataframes_cdf,"dataframes_cdf")
+            helpers.save_obj(dataframes_C1,"dataframes_C1_" + str(year))
+            helpers.save_obj(dataframes_cdf,"dataframes_cdf_" + str(year))
         
-    else:
-        dataframes_C1 = helpers.read_obj("dataframes_C1")
-        dataframes_cdf = helpers.read_obj("dataframes_cdf")
+        else:
+            dataframes_C1 = helpers.read_obj("dataframes_C1_" + str(year))
+            dataframes_cdf = helpers.read_obj("dataframes_cdf_" + str(year))
 
     return dataframes_C1, dataframes_cdf
 
@@ -229,18 +229,23 @@ if __name__ == '__main__':
         single_cdf_frame = dataframes_cdf[df]
         single_c1_frame = dataframes_C1[df]
 
-        cdf_temp = single_cdf_frame.reset_index()
-        c1_temp = single_c1_frame.reset_index()
-
+        try:
+            cdf_temp = single_cdf_frame.reset_index()
+            c1_temp = single_c1_frame.reset_index()
+        except:
+            continue
         time_values = cdf_temp['time'].unique()
 
         cdf_grp = cdf_temp.groupby(['time'])
         c1_grp = single_c1_frame.groupby(['time'])
 
         for timee in time_values:
-            small_series_cdf = cdf_grp.get_group(timee)
-            small_series_c1 = c1_grp.get_group(timee)
-
+            try:
+                small_series_cdf = cdf_grp.get_group(timee)
+                small_series_c1 = c1_grp.get_group(timee)
+            except: #cdf and c1 files have different number of spectra recorded
+                print("Failed", + str(year))
+                print("at time " + str(timee))
 
             small_series_c1 = small_series_c1.reset_index()
             small_series_cdf = small_series_cdf.reset_index()
@@ -249,13 +254,12 @@ if __name__ == '__main__':
             truncated_850_950 = helpers.read_wavenumber_slice(small_series_c1, (850,950))
             truncated_850_950.mean_rad = truncated_850_950.mean_rad / 1000
 
-
+            
             intermediary = read_wavenumber_slice(small_series_cdf, 10)
             date = str(small_series_c1.iloc[0]['time_offset']).split(' ')  
         
             cloudy, season = cloudify(date, truncated_850_950)
 
-            #print(intermediary)
             try:
                 brightness_temps += [intermediary.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']]
                 um10_brightness_temps[season]['All'].append(brightness_temps)

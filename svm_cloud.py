@@ -10,6 +10,3 @@ import numpy as np
 
 # Samples to be evaluated should be of size (m,1)
 svc = svm.SVC(kernel='rbf', gamma = 0.7, C=1.0).fit(X,y) # This trains a SVM classifier with rbf kernel
-
-
-
