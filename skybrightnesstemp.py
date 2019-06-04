@@ -143,7 +143,7 @@ def read_wavenumber_slice(df, slice_range):
         return df.loc[np.abs(df['wnum11'] - 999.776897) < 0.05]
     elif slice_range == 20:
         #TODO Change this to the 20um wavelength wavenumber, after I look it up
-        return df.loc[np.abs(df['wnum11'] - 999.776897) < 0.05]
+        return df.loc[np.abs(df['wnum11'] - 999.776897) < 0.05] 
 
 def histogram_plot(data, save_path):
 
@@ -201,8 +201,8 @@ def read_dataframes(years):
 
 
 if __name__ == '__main__':
-    #years = [2008,2009,2011,2012,2013,2014]
-    years = [2008]
+    years = [2008,2009,2011,2012,2013,2014]
+    #years = [2008]
 
     dataframes_C1, dataframes_cdf = read_dataframes(years)
     # print(dataframes[0]['base_time'])
@@ -225,6 +225,9 @@ if __name__ == '__main__':
 
     for ind,df in enumerate(dataframes_cdf):
         print(ind)
+
+        if ind==2:
+            break
         
         single_cdf_frame = dataframes_cdf[df]
         single_c1_frame = dataframes_C1[df]
@@ -234,6 +237,7 @@ if __name__ == '__main__':
             c1_temp = single_c1_frame.reset_index()
         except:
             continue
+
         time_values = cdf_temp['time'].unique()
 
         cdf_grp = cdf_temp.groupby(['time'])
@@ -243,13 +247,11 @@ if __name__ == '__main__':
             try:
                 small_series_cdf = cdf_grp.get_group(timee)
                 small_series_c1 = c1_grp.get_group(timee)
-            except: #cdf and c1 files have different number of spectra recorded
-                print("Failed", + str(year))
-                print("at time " + str(timee))
 
-            small_series_c1 = small_series_c1.reset_index()
-            small_series_cdf = small_series_cdf.reset_index()
-
+                small_series_c1 = small_series_c1.reset_index()
+                small_series_cdf = small_series_cdf.reset_index()
+            except:
+                continue
 
             truncated_850_950 = helpers.read_wavenumber_slice(small_series_c1, (850,950))
             truncated_850_950.mean_rad = truncated_850_950.mean_rad / 1000
@@ -261,19 +263,21 @@ if __name__ == '__main__':
             cloudy, season = cloudify(date, truncated_850_950)
 
             try:
-                brightness_temps += [intermediary.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']]
+                brightness_temps = intermediary.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
+                #print(brightness_temps)
                 um10_brightness_temps[season]['All'].append(brightness_temps)
                 um10_brightness_temps[season][cloudy].append(brightness_temps)
 
                 um20_brightness_temps[season]['All'].append(brightness_temps)
                 um20_brightness_temps[season][cloudy].append(brightness_temps)
             except:
-                pass
-
-                   
+                print(intermediary.iloc[0])
+   
             cloudy_counts[cloudy] += 1
     #return {'10um': um10_brightess_temps, '20um':um20_brightness_temps}, cloudy_counts
 
+    print(um10_brightness_temps)
+    print(cloudy_counts)
     for season in ["W", "F/S", "S"]:
         
         season_sanitized = "FS" if season == "F/S" else season #Manually sanitize string to make it suitable for filename
@@ -287,15 +291,15 @@ if __name__ == '__main__':
         helpers.histogram_plot(um20_brightness_temps[season]['Thin'], './seasonal_plots/20um/' + season_sanitized + '_thin')
         helpers.histogram_plot(um20_brightness_temps[season]['Thick'], './seasonal_plots/20um/' + season_sanitized + '_thick')
 
-        all_10um_counts['All'] + um10_brightness_temps[season]['All'] 
-        all_10um_counts['Clear'] + um10_brightness_temps[season]['Clear']
-        all_10um_counts['Thin'] + um10_brightness_temps[season]['Thin']
-        all_10um_counts['Thick'] + um10_brightness_temps[season]['Thick']
+        all_10um_counts['All'] += um10_brightness_temps[season]['All'] 
+        all_10um_counts['Clear'] += um10_brightness_temps[season]['Clear']
+        all_10um_counts['Thin'] += um10_brightness_temps[season]['Thin']
+        all_10um_counts['Thick'] += um10_brightness_temps[season]['Thick']
         
-        all_20um_counts['All'] + um20_brightness_temps[season]['All']
-        all_20um_counts['Clear'] + um20_brightness_temps[season]['Clear']
-        all_20um_counts['Thin'] + um20_brightness_temps[season]['Thin']
-        all_20um_counts['Thick'] + um20_brightness_temps[season]['Thick']
+        all_20um_counts['All'] += um20_brightness_temps[season]['All']
+        all_20um_counts['Clear'] += um20_brightness_temps[season]['Clear']
+        all_20um_counts['Thin'] += um20_brightness_temps[season]['Thin']
+        all_20um_counts['Thick'] += um20_brightness_temps[season]['Thick']
     
     # Plot overall pattern, without seasonal dependence
     helpers.histogram_plot(all_10um_counts['All'], './non_seasonal_plots/10um/all')
