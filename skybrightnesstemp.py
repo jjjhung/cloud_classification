@@ -142,8 +142,7 @@ def read_wavenumber_slice(df, slice_range):
     if slice_range == 10:
         return df.loc[np.abs(df['wnum11'] - 999.776897) < 0.05]
     elif slice_range == 20:
-        #TODO Change this to the 20um wavelength wavenumber, after I look it up
-        return df.loc[np.abs(df['wnum11'] - 999.776897) < 0.05] 
+        return df.loc[np.abs(df['wnum11'] - 524.772602) < 0.05] 
 
 def histogram_plot(data, save_path):
 
@@ -201,8 +200,8 @@ def read_dataframes(years):
 
 
 if __name__ == '__main__':
-    years = [2008,2009,2011,2012,2013,2014]
-    #years = [2008]
+    #years = [2008,2009,2011,2012,2013,2014]
+    years = [2008]
 
     dataframes_C1, dataframes_cdf = read_dataframes(years)
     # print(dataframes[0]['base_time'])
@@ -223,11 +222,8 @@ if __name__ == '__main__':
     all_10um_counts = copy.deepcopy(brightness_template)
     all_20um_counts = copy.deepcopy(brightness_template)
 
+    # Each key in dataframes_cdf is a date - iterate through all of them and count revelant info
     for ind,df in enumerate(dataframes_cdf):
-        print(ind)
-
-        if ind==2:
-            break
         
         single_cdf_frame = dataframes_cdf[df]
         single_c1_frame = dataframes_C1[df]
@@ -255,11 +251,11 @@ if __name__ == '__main__':
 
             truncated_850_950 = helpers.read_wavenumber_slice(small_series_c1, (850,950))
             truncated_850_950.mean_rad = truncated_850_950.mean_rad / 1000
-
-            
+            # Get brightness temperature at 10um
             intermediary = read_wavenumber_slice(small_series_cdf, 10)
             date = str(small_series_c1.iloc[0]['time_offset']).split(' ')  
         
+            # Classify cloudiness and season 
             cloudy, season = cloudify(date, truncated_850_950)
 
             try:
@@ -278,6 +274,17 @@ if __name__ == '__main__':
 
     print(um10_brightness_temps)
     print(cloudy_counts)
+
+    #Save some checkpoints
+    helpers.save_obj(um10_brightness_temps[season]['All'], "um10_brightness_temps_" + season_sanitized + "_" + str(year) + "_All")
+    helpers.save_obj(um10_brightness_temps[season]['Clear'], "um10_brightness_temps_" + season_sanitized + "_" + str(year) + "_Clear")
+    helpers.save_obj(um10_brightness_temps[season]['Thin'], "um10_brightness_temps_" + season_sanitized + "_" + str(year) + "_Thin")
+    helpers.save_obj(um10_brightness_temps[season]['Thick'], "um10_brightness_temps_" + season_sanitized + "_" + str(year) + "_Thick")
+    helpers.save_obj(um20_brightness_temps[season]['All'], "um20_brightness_temps_" + season_sanitized + "_" + str(year) + "_All")
+    helpers.save_obj(um20_brightness_temps[season]['Clear'], "um20_brightness_temps_" + season_sanitized + "_" + str(year) + "_Clear")
+    helpers.save_obj(um20_brightness_temps[season]['Thin'], "um20_brightness_temps_" + season_sanitized + "_" + str(year) + "_Thin")
+    helpers.save_obj(um20_brightness_temps[season]['Thick'], "um20_brightness_temps_" + season_sanitized + "_" + str(year) + "_Thick")
+
     for season in ["W", "F/S", "S"]:
         
         season_sanitized = "FS" if season == "F/S" else season #Manually sanitize string to make it suitable for filename
@@ -311,4 +318,3 @@ if __name__ == '__main__':
     helpers.histogram_plot(all_20um_counts['Clear'], './non_seasonal_plots/20um/Clear')
     helpers.histogram_plot(all_20um_counts['Thin'], './non_seasonal_plots/20um/Thin')
     helpers.histogram_plot(all_20um_counts['Thick'], './non_seasonal_plots/20um/Thick')
-
