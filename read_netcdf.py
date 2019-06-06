@@ -52,67 +52,8 @@ def save_plot(date, year, data):
         Saves plots in ./[year]_plots/[date]
     '''
     path_save = './' + str(year) + '_plots/' + date[0] + '/' + date[1]
-
-    if not os.path.exists('./' + str(year) + '_plots/' + date[0]):
-        os.makedirs('./' + str(year) + '_plots/' + date[0])
-    
+    helpers.create_dir('./' + str(year) + '_plots/' + date[0])
     plot(data, 'wnum1', 'mean_rad', path_save)
-
-def det_season(date):
-    month = int(date[0][5:7])
-
-    if month >= 6 and month <= 8:
-        season = "S"
-    elif month == 5 or month == 9:
-        season = "F/S"
-    else:
-        season = "W"
-
-    return season
-
-def winter_radiances(rad):
-    #rad = rad / 1000
-
-    #print(rad)
-    if rad < 0.0015:
-        return "Clear"
-    elif rad <= 0.009:
-        return "Thin"
-    else:
-        return "Thick"
-
-def fallspr_radiances(rad):
-    #rad = rad / 1000
-
-    if rad < 0.007:
-        return "Clear"
-    elif rad <= 0.02:
-        return "Thin"
-    else:
-        return "Thick"
-
-def summer_radiances(rad):
-    #radiance = rad / 1000
-
-    if rad < 0.015:
-        return "Clear"
-    elif rad <= 0.045:
-        return "Thin"
-    else:
-        return "Thick"
-
-def cloudify(date, df):
-    season = det_season(date)
-    temp_df = df
-    
-    rad_mean = temp_df['mean_rad'].mean()
-
-    if season == 'W': #Winter
-        return winter_radiances(rad_mean), season
-    elif season == 'F/S': #Fall / Spring
-        return fallspr_radiances(rad_mean), season
-    elif season == 'S': #Summer
-        return summer_radiances(rad_mean), season
 
 
 def read_wavenumber_slice(df, slice_range):
@@ -180,7 +121,7 @@ def read_files(year):
 
 
             # Classify scene as clear/thin/thick cloudy, and season of measurement
-            cloudy, season = cloudify(date, truncated_850_950)
+            cloudy, season = helpers.cloudify(date, truncated_850_950)
 
             # Wavenumbers truncated in the 10um range, can be plotted to visualize
             truncated_10um = helpers.read_wavenumber_slice(small_series, (985,998))
@@ -192,7 +133,8 @@ def read_files(year):
             truncated10um_brighttemp = avg_brightness_temp(truncated_10um)
             truncated20um_brighttemp = avg_brightness_temp(truncated_20um)
 
-
+            
+            
             try:
                 holder = truncated10um_brighttemp['avg_brightness_temp'].mean()
                 um10_brightness_temps[season]['All'] += [holder]

@@ -69,62 +69,6 @@ def save_plot(date, year, data):
     
     plot(data, 'wnum1', 'mean_rad', path_save)
 
-def det_season(date):
-    month = int(date[0][5:7])
-
-    if month >= 6 and month <= 8:
-        season = "S"
-    elif month == 5 or month == 9:
-        season = "F/S"
-    else:
-        season = "W"
-
-    return season
-
-def winter_radiances(rad):
-    #rad = rad / 1000
-
-    if rad < 0.0015:
-        return "Clear"
-    elif rad <= 0.009:
-        return "Thin"
-    else:
-        return "Thick"
-
-def fallspr_radiances(rad):
-    #rad = rad / 1000
-
-    if rad < 0.007:
-        return "Clear"
-    elif rad <= 0.02:
-        return "Thin"
-    else:
-        return "Thick"
-
-def summer_radiances(rad):
-    #radiance = rad / 1000
-
-    if rad < 0.015:
-        return "Clear"
-    elif rad <= 0.045:
-        return "Thin"
-    else:
-        return "Thick"
-
-def cloudify(date, df):
-    season = det_season(date)
-    temp_df = df
-    
-    rad_mean = temp_df['mean_rad'].mean()
-
-    if season == 'W': #Winter
-        return winter_radiances(rad_mean), season
-    elif season == 'F/S': #Fall / Spring
-        return fallspr_radiances(rad_mean), season
-    elif season == 'S': #Summer
-        return summer_radiances(rad_mean), season
-
-
 def read_wavenumber_slice(df, slice_range):
 
     '''
@@ -258,7 +202,7 @@ if __name__ == '__main__':
             intermediary = read_wavenumber_slice(small_series_cdf, 10)
             date = str(small_series_c1.iloc[0]['time_offset']).split(' ')  
         
-            cloudy, season = cloudify(date, truncated_850_950)
+            cloudy, season = helpers.cloudify(date, truncated_850_950)
 
             try:
                 brightness_temps += [intermediary.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']]

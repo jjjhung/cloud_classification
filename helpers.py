@@ -30,8 +30,7 @@ def brightness_temp(radiance, wnum):
 
     # divid = coeff / sp.log(ln_elements)
 
-    ln_elements = 2 * constants.Planck * (wavenum**3) * (constants.speed_of_light**2) / (radiance/1000)
-    ln_elements += 1
+    ln_elements = ((2 * constants.Planck * (wavenum**3) * (constants.speed_of_light**2)) + 1) / (radiance/1000)
     coeff = constants.Planck * constants.speed_of_light * wavenum / constants.Boltzmann 
         
     divid = coeff / sp.log(ln_elements)
@@ -135,3 +134,62 @@ def histogram_plot(data, save_path):
     sns.distplot(data, kde=False, rug=True)
     plt.savefig(save_path)
     plt.clf()
+
+
+
+def det_season(date):
+    month = int(date[0][5:7])
+
+    if month >= 6 and month <= 8:
+        season = "S"
+    elif month == 5 or month == 9:
+        season = "F/S"
+    else:
+        season = "W"
+
+    return season
+
+def winter_radiances(rad):
+    #rad = rad / 1000
+
+    #print(rad)
+    if rad < 0.0015:
+        return "Clear"
+    elif rad <= 0.009:
+        return "Thin"
+    else:
+        return "Thick"
+
+def fallspr_radiances(rad):
+    #rad = rad / 1000
+
+    if rad < 0.007:
+        return "Clear"
+    elif rad <= 0.02:
+        return "Thin"
+    else:
+        return "Thick"
+
+def summer_radiances(rad):
+    #radiance = rad / 1000
+
+    if rad < 0.015:
+        return "Clear"
+    elif rad <= 0.045:
+        return "Thin"
+    else:
+        return "Thick"
+
+def cloudify(date, df):
+    season = det_season(date)
+    temp_df = df
+    
+    rad_mean = temp_df['mean_rad'].mean()
+
+    if season == 'W': #Winter
+        return winter_radiances(rad_mean), season
+    elif season == 'F/S': #Fall / Spring
+        return fallspr_radiances(rad_mean), season
+    elif season == 'S': #Summer
+        return summer_radiances(rad_mean), season
+
