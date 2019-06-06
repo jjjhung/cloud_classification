@@ -30,8 +30,9 @@ def brightness_temp(radiance, wnum):
 
     # divid = coeff / sp.log(ln_elements)
 
-    ln_elements = ((2 * constants.Planck * (wavenum**3) * (constants.speed_of_light**2)) + 1) / (radiance/1000)
-
+    ln_elements = -2 * constants.Planck * (wavenum**3) * (constants.speed_of_light**2) / (radiance/1000)
+    ln_elements += 1
+    
     coeff = constants.Planck * constants.speed_of_light * wavenum / constants.Boltzmann 
         
     divid = coeff / sp.log(ln_elements)

@@ -1,7 +1,8 @@
 '''
     This file is for visualizing a single datafile.
     Opens a file titled YYMMDD.cdf, instead of a YYMMDDC1.cdf file
-    Mostly for reading the sky brightness temp. 
+    
+    Plots the histograms for brightness temperatures read directly from the cdf files
 
 '''
 import matplotlib
@@ -37,26 +38,6 @@ def avg_brightness_temp(df):
 
     return temp_df
 
-
-def histogram_plot(data, save_path):
-
-    if data == []:
-        return 
-    sns.distplot(data, kde=False, rug=True)
-    plt.savefig(save_path)
-    plt.clf()
-
-def plot(df, axis_x, axis_y, save_path):
-    '''
-    Plots a particular dataframe with given x and y axes
-    Saves plotted figure to provided path
-    '''
-
-    sns.lineplot(axis_x, axis_y,data=df)
-    plt.savefig(save_path)
-    plt.clf()
-
-
 def save_plot(date, year, data):
     '''
     Wrapper for plotting function - checks if appropriate organizing folders exist and 
@@ -69,7 +50,7 @@ def save_plot(date, year, data):
     
     plot(data, 'wnum1', 'mean_rad', path_save)
 
-def read_wavenumber_slice(df, slice_range):
+def read_wavenumber_slice_set(df, slice_range):
 
     '''
     Returns a truncated dataframe with only datapoints contained within the provided wavenumber range
@@ -144,121 +125,139 @@ def read_dataframes(years):
 
 
 if __name__ == '__main__':
-    #years = [2008,2009,2011,2012,2013,2014]
-    years = [2008]
+    years = [2008,2009,2011,2012,2013,2014]
+    #years = [2008]
 
-    dataframes_C1, dataframes_cdf = read_dataframes(years)
-    # print(dataframes[0]['base_time'])
-    # print(C1_dataframes[0]['base_time'])
+    if PARAMS['RUN_PROGRAM_FROM_SCRATCH']:
+        dataframes_C1, dataframes_cdf = read_dataframes(years)
+        # print(dataframes[0]['base_time'])
+        # print(C1_dataframes[0]['base_time'])
 
-    cloudy_counts = {"Clear": 0, "Thin": 0, "Thick": 0}
+        cloudy_counts = {"Clear": 0, "Thin": 0, "Thick": 0}
 
-    brightness_template = {"All": [], "Clear": [], "Thin": [], "Thick": []}
+        brightness_template = {"All": [], "Clear": [], "Thin": [], "Thick": []}
 
-    um10_brightness_temps = {"W": copy.deepcopy(brightness_template), 
-                             "F/S": copy.deepcopy(brightness_template),
-                             "S": copy.deepcopy(brightness_template)}
+        um10_brightness_temps = {"W": copy.deepcopy(brightness_template), 
+                                 "F/S": copy.deepcopy(brightness_template),
+                                 "S": copy.deepcopy(brightness_template)}
 
-    um20_brightness_temps = {"W": copy.deepcopy(brightness_template), 
-                             "F/S": copy.deepcopy(brightness_template),
-                             "S": copy.deepcopy(brightness_template)}
+        um20_brightness_temps = {"W": copy.deepcopy(brightness_template), 
+                                 "F/S": copy.deepcopy(brightness_template),
+                                 "S": copy.deepcopy(brightness_template)}
 
-    all_10um_counts = copy.deepcopy(brightness_template)
-    all_20um_counts = copy.deepcopy(brightness_template)
+        all_10um_counts = copy.deepcopy(brightness_template)
+        all_20um_counts = copy.deepcopy(brightness_template)
 
-    # Each key in dataframes_cdf is a date - iterate through all of them and count revelant info
-    for ind,df in enumerate(dataframes_cdf):
-        
-        single_cdf_frame = dataframes_cdf[df]
-        single_c1_frame = dataframes_C1[df]
+        # Each key in dataframes_cdf is a date - iterate through all of them and count revelant info
+        for ind,df in enumerate(dataframes_cdf):
+            
+            single_cdf_frame = dataframes_cdf[df]
+            single_c1_frame = dataframes_C1[df]
 
-        try:
-            cdf_temp = single_cdf_frame.reset_index()
-            c1_temp = single_c1_frame.reset_index()
-        except:
-            continue
-
-        time_values = cdf_temp['time'].unique()
-
-        cdf_grp = cdf_temp.groupby(['time'])
-        c1_grp = single_c1_frame.groupby(['time'])
-
-        for timee in time_values:
             try:
-                small_series_cdf = cdf_grp.get_group(timee)
-                small_series_c1 = c1_grp.get_group(timee)
-
-                small_series_c1 = small_series_c1.reset_index()
-                small_series_cdf = small_series_cdf.reset_index()
+                cdf_temp = single_cdf_frame.reset_index()
+                c1_temp = single_c1_frame.reset_index()
             except:
                 continue
 
-            truncated_850_950 = helpers.read_wavenumber_slice(small_series_c1, (850,950))
-            truncated_850_950.mean_rad = truncated_850_950.mean_rad / 1000
-            # Get brightness temperature at 10um
-            intermediary = read_wavenumber_slice(small_series_cdf, 10)
-            date = str(small_series_c1.iloc[0]['time_offset']).split(' ')  
+            time_values = cdf_temp['time'].unique()
+
+            cdf_grp = cdf_temp.groupby(['time'])
+            c1_grp = single_c1_frame.groupby(['time'])
+
+            for timee in time_values:
+                try:
+                    small_series_cdf = cdf_grp.get_group(timee)
+                    small_series_c1 = c1_grp.get_group(timee)
+
+                    small_series_c1 = small_series_c1.reset_index()
+                    small_series_cdf = small_series_cdf.reset_index()
+                except:
+                    continue
+
+                truncated_850_950 = helpers.read_wavenumber_slice(small_series_c1, (850,950))
+                truncated_850_950.mean_rad = truncated_850_950.mean_rad / 1000
+                # Get brightness temperature at 10um
+                intermediary = read_wavenumber_slice_set(small_series_cdf, 10)
+
+
+                date = str(small_series_c1.iloc[0]['time_offset']).split(' ')  
+            
+                cloudy, season = helpers.cloudify(date, truncated_850_950)
+
+
+                try:
+                    brightness_temps = intermediary.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
+                    #print(brightness_temps)
+                    um10_brightness_temps[season]['All'].append(brightness_temps)
+                    um10_brightness_temps[season][cloudy].append(brightness_temps)
+
+                    um20_brightness_temps[season]['All'].append(brightness_temps)
+                    um20_brightness_temps[season][cloudy].append(brightness_temps)
+                except:
+                    #print(intermediary.iloc[0])
+                    continue
+       
+                cloudy_counts[cloudy] += 1
+        #return {'10um': um10_brightess_temps, '20um':um20_brightness_temps}, cloudy_counts
+
+        print(um10_brightness_temps)
+        print(cloudy_counts)
+
+
+        #Save some checkpoints
+        for season in ["S", "F/S", "W"]:
+
+            season_sanitized = "FS" if season == "F/S" else season #Manually sanitize string to make it suitable for C1_filename
+            helpers.save_obj(um10_brightness_temps[season]['All'], "um10_brightness_temps_" + season_sanitized + "_All")
+            helpers.save_obj(um10_brightness_temps[season]['Clear'], "um10_brightness_temps_" + season_sanitized + "_Clear")
+            helpers.save_obj(um10_brightness_temps[season]['Thin'], "um10_brightness_temps_" + season_sanitized + "_Thin")
+            helpers.save_obj(um10_brightness_temps[season]['Thick'], "um10_brightness_temps_" + season_sanitized + "_Thick")
+            helpers.save_obj(um20_brightness_temps[season]['All'], "um20_brightness_temps_" + season_sanitized + "_All")
+            helpers.save_obj(um20_brightness_temps[season]['Clear'], "um20_brightness_temps_" + season_sanitized + "_Clear")
+            helpers.save_obj(um20_brightness_temps[season]['Thin'], "um20_brightness_temps_" + season_sanitized + "_Thin")
+            helpers.save_obj(um20_brightness_temps[season]['Thick'], "um20_brightness_temps_" + season_sanitized + "_Thick")
+
+    else:
+        # um10_brightness_temps = helpers.read_obj('um10_brightness_temps_S_All')
+        # um10_brightness_temps = helpers.read_obj('um10_brightness_temps_S_Clear')
+        # um10_brightness_temps = helpers.read_obj('um10_brightness_temps_S_Thin')
+        # um10_brightness_temps = helpers.read_obj('um10_brightness_temps_S_Thick')
+        # um20_brightness_temps = helpers.read_obj('um20_brightness_temps_S_All')
+        # um20_brightness_temps = helpers.read_obj('um20_brightness_temps_S_Clear')
+        # um20_brightness_temps = helpers.read_obj('um20_brightness_temps_S_Thin')
+        # um20_brightness_temps = helpers.read_obj('um20_brightness_temps_S_Thick')
         
-            cloudy, season = helpers.cloudify(date, truncated_850_950)
+        for season in ["W", "F/S", "S"]:
+            
+            season_sanitized = "FS" if season == "F/S" else season #Manually sanitize string to make it suitable for filename
+            helpers.histogram_plot(um10_brightness_temps[season]['All'], './seasonal_plots/10um/' + season_sanitized + '_all')
+            helpers.histogram_plot(um10_brightness_temps[season]['Clear'], './seasonal_plots/10um/' + season_sanitized + '_clear')
+            helpers.histogram_plot(um10_brightness_temps[season]['Thin'], './seasonal_plots/10um/' + season_sanitized + '_thin')
+            helpers.histogram_plot(um10_brightness_temps[season]['Thick'], './seasonal_plots/10um/' + season_sanitized + '_thick')
 
+            helpers.histogram_plot(um20_brightness_temps[season]['All'], './seasonal_plots/20um/' + season_sanitized + '_all')
+            helpers.histogram_plot(um20_brightness_temps[season]['Clear'], './seasonal_plots/20um/' + season_sanitized + '_clear')
+            helpers.histogram_plot(um20_brightness_temps[season]['Thin'], './seasonal_plots/20um/' + season_sanitized + '_thin')
+            helpers.histogram_plot(um20_brightness_temps[season]['Thick'], './seasonal_plots/20um/' + season_sanitized + '_thick')
 
-            try:
-                brightness_temps = intermediary.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
-                #print(brightness_temps)
-                um10_brightness_temps[season]['All'].append(brightness_temps)
-                um10_brightness_temps[season][cloudy].append(brightness_temps)
-
-                um20_brightness_temps[season]['All'].append(brightness_temps)
-                um20_brightness_temps[season][cloudy].append(brightness_temps)
-            except:
-                print(intermediary.iloc[0])
-   
-            cloudy_counts[cloudy] += 1
-    #return {'10um': um10_brightess_temps, '20um':um20_brightness_temps}, cloudy_counts
-
-    print(um10_brightness_temps)
-    print(cloudy_counts)
-
-    #Save some checkpoints
-    helpers.save_obj(um10_brightness_temps[season]['All'], "um10_brightness_temps_" + season_sanitized + "_" + str(year) + "_All")
-    helpers.save_obj(um10_brightness_temps[season]['Clear'], "um10_brightness_temps_" + season_sanitized + "_" + str(year) + "_Clear")
-    helpers.save_obj(um10_brightness_temps[season]['Thin'], "um10_brightness_temps_" + season_sanitized + "_" + str(year) + "_Thin")
-    helpers.save_obj(um10_brightness_temps[season]['Thick'], "um10_brightness_temps_" + season_sanitized + "_" + str(year) + "_Thick")
-    helpers.save_obj(um20_brightness_temps[season]['All'], "um20_brightness_temps_" + season_sanitized + "_" + str(year) + "_All")
-    helpers.save_obj(um20_brightness_temps[season]['Clear'], "um20_brightness_temps_" + season_sanitized + "_" + str(year) + "_Clear")
-    helpers.save_obj(um20_brightness_temps[season]['Thin'], "um20_brightness_temps_" + season_sanitized + "_" + str(year) + "_Thin")
-    helpers.save_obj(um20_brightness_temps[season]['Thick'], "um20_brightness_temps_" + season_sanitized + "_" + str(year) + "_Thick")
-
-    for season in ["W", "F/S", "S"]:
+            all_10um_counts['All'] += um10_brightness_temps[season]['All'] 
+            all_10um_counts['Clear'] += um10_brightness_temps[season]['Clear']
+            all_10um_counts['Thin'] += um10_brightness_temps[season]['Thin']
+            all_10um_counts['Thick'] += um10_brightness_temps[season]['Thick']
+            
+            all_20um_counts['All'] += um20_brightness_temps[season]['All']
+            all_20um_counts['Clear'] += um20_brightness_temps[season]['Clear']
+            all_20um_counts['Thin'] += um20_brightness_temps[season]['Thin']
+            all_20um_counts['Thick'] += um20_brightness_temps[season]['Thick']
         
-        season_sanitized = "FS" if season == "F/S" else season #Manually sanitize string to make it suitable for filename
-        helpers.histogram_plot(um10_brightness_temps[season]['All'], './seasonal_plots/10um/' + season_sanitized + '_all')
-        helpers.histogram_plot(um10_brightness_temps[season]['Clear'], './seasonal_plots/10um/' + season_sanitized + '_clear')
-        helpers.histogram_plot(um10_brightness_temps[season]['Thin'], './seasonal_plots/10um/' + season_sanitized + '_thin')
-        helpers.histogram_plot(um10_brightness_temps[season]['Thick'], './seasonal_plots/10um/' + season_sanitized + '_thick')
+        # Plot overall pattern, without seasonal dependence
+        helpers.histogram_plot(all_10um_counts['All'], './non_seasonal_plots/10um/all')
+        helpers.histogram_plot(all_10um_counts['Clear'], './non_seasonal_plots/10um/clear')
+        helpers.histogram_plot(all_10um_counts['Thin'], './non_seasonal_plots/10um/all')
+        helpers.histogram_plot(all_10um_counts['Thick'], './non_seasonal_plots/10um/Thick')
 
-        helpers.histogram_plot(um20_brightness_temps[season]['All'], './seasonal_plots/20um/' + season_sanitized + '_all')
-        helpers.histogram_plot(um20_brightness_temps[season]['Clear'], './seasonal_plots/20um/' + season_sanitized + '_clear')
-        helpers.histogram_plot(um20_brightness_temps[season]['Thin'], './seasonal_plots/20um/' + season_sanitized + '_thin')
-        helpers.histogram_plot(um20_brightness_temps[season]['Thick'], './seasonal_plots/20um/' + season_sanitized + '_thick')
-
-        all_10um_counts['All'] += um10_brightness_temps[season]['All'] 
-        all_10um_counts['Clear'] += um10_brightness_temps[season]['Clear']
-        all_10um_counts['Thin'] += um10_brightness_temps[season]['Thin']
-        all_10um_counts['Thick'] += um10_brightness_temps[season]['Thick']
-        
-        all_20um_counts['All'] += um20_brightness_temps[season]['All']
-        all_20um_counts['Clear'] += um20_brightness_temps[season]['Clear']
-        all_20um_counts['Thin'] += um20_brightness_temps[season]['Thin']
-        all_20um_counts['Thick'] += um20_brightness_temps[season]['Thick']
-    
-    # Plot overall pattern, without seasonal dependence
-    helpers.histogram_plot(all_10um_counts['All'], './non_seasonal_plots/10um/all')
-    helpers.histogram_plot(all_10um_counts['Clear'], './non_seasonal_plots/10um/clear')
-    helpers.histogram_plot(all_10um_counts['Thin'], './non_seasonal_plots/10um/all')
-    helpers.histogram_plot(all_10um_counts['Thick'], './non_seasonal_plots/10um/Thick')
-
-    helpers.histogram_plot(all_20um_counts['All'], './non_seasonal_plots/20um/all')
-    helpers.histogram_plot(all_20um_counts['Clear'], './non_seasonal_plots/20um/Clear')
-    helpers.histogram_plot(all_20um_counts['Thin'], './non_seasonal_plots/20um/Thin')
-    helpers.histogram_plot(all_20um_counts['Thick'], './non_seasonal_plots/20um/Thick')
+        helpers.histogram_plot(all_20um_counts['All'], './non_seasonal_plots/20um/all')
+        helpers.histogram_plot(all_20um_counts['Clear'], './non_seasonal_plots/20um/Clear')
+        helpers.histogram_plot(all_20um_counts['Thin'], './non_seasonal_plots/20um/Thin')
+        helpers.histogram_plot(all_20um_counts['Thick'], './non_seasonal_plots/20um/Thick')

@@ -38,7 +38,7 @@ def plot(df, axis_x, axis_y, save_path):
     Saves plotted figure to provided path
     '''
 
-    sns.lineplot(axis_x, axis_y,data=df) 
+    sns.lineplot(axis_x, axis_y,data=df)
     plt.savefig(save_path)
     plt.clf()
 
@@ -131,11 +131,9 @@ def read_files(year):
 
             #10um wavenumbers with brightness temperature calculations added as additional col
             truncated10um_brighttemp = avg_brightness_temp(truncated_10um)
-            print(truncated10um_brighttemp)
             truncated20um_brighttemp = avg_brightness_temp(truncated_20um)
 
-            
-            
+
             try:
                 holder = truncated10um_brighttemp['avg_brightness_temp'].mean()
                 um10_brightness_temps[season]['All'] += [holder]
