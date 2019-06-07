@@ -13,6 +13,7 @@ import re
 import time
 import helpers
 import copy
+import math
 import pandas as pd
 import xarray as xr
 import numpy as np
@@ -22,7 +23,8 @@ import matplotlib.pyplot as plt
 sns.set(style="darkgrid")
 
 PARAMS = {"LOAD_DATA_FROM_SCRATCH": False, 
-          "PLOT_DATA": False}
+          "PLOT_DATA": False,
+          "RUN_PROGRAM_FROM_SCRATCH": False}
 
 def avg_brightness_temp(df):
     '''
@@ -128,25 +130,25 @@ if __name__ == '__main__':
     years = [2008,2009,2011,2012,2013,2014]
     #years = [2008]
 
+    cloudy_counts = {"Clear": 0, "Thin": 0, "Thick": 0}
+
+    brightness_template = {"All": [], "Clear": [], "Thin": [], "Thick": []}
+
+    um10_brightness_temps = {"W": copy.deepcopy(brightness_template), 
+                             "F/S": copy.deepcopy(brightness_template),
+                             "S": copy.deepcopy(brightness_template)}
+
+    um20_brightness_temps = {"W": copy.deepcopy(brightness_template), 
+                             "F/S": copy.deepcopy(brightness_template),
+                             "S": copy.deepcopy(brightness_template)}
+
+    all_10um_counts = copy.deepcopy(brightness_template)
+    all_20um_counts = copy.deepcopy(brightness_template)
+
     if PARAMS['RUN_PROGRAM_FROM_SCRATCH']:
         dataframes_C1, dataframes_cdf = read_dataframes(years)
         # print(dataframes[0]['base_time'])
         # print(C1_dataframes[0]['base_time'])
-
-        cloudy_counts = {"Clear": 0, "Thin": 0, "Thick": 0}
-
-        brightness_template = {"All": [], "Clear": [], "Thin": [], "Thick": []}
-
-        um10_brightness_temps = {"W": copy.deepcopy(brightness_template), 
-                                 "F/S": copy.deepcopy(brightness_template),
-                                 "S": copy.deepcopy(brightness_template)}
-
-        um20_brightness_temps = {"W": copy.deepcopy(brightness_template), 
-                                 "F/S": copy.deepcopy(brightness_template),
-                                 "S": copy.deepcopy(brightness_template)}
-
-        all_10um_counts = copy.deepcopy(brightness_template)
-        all_20um_counts = copy.deepcopy(brightness_template)
 
         # Each key in dataframes_cdf is a date - iterate through all of them and count revelant info
         for ind,df in enumerate(dataframes_cdf):
@@ -219,17 +221,17 @@ if __name__ == '__main__':
             helpers.save_obj(um20_brightness_temps[season]['Thick'], "um20_brightness_temps_" + season_sanitized + "_Thick")
 
     else:
-        # um10_brightness_temps = helpers.read_obj('um10_brightness_temps_S_All')
-        # um10_brightness_temps = helpers.read_obj('um10_brightness_temps_S_Clear')
-        # um10_brightness_temps = helpers.read_obj('um10_brightness_temps_S_Thin')
-        # um10_brightness_temps = helpers.read_obj('um10_brightness_temps_S_Thick')
-        # um20_brightness_temps = helpers.read_obj('um20_brightness_temps_S_All')
-        # um20_brightness_temps = helpers.read_obj('um20_brightness_temps_S_Clear')
-        # um20_brightness_temps = helpers.read_obj('um20_brightness_temps_S_Thin')
-        # um20_brightness_temps = helpers.read_obj('um20_brightness_temps_S_Thick')
+        um10_brightness_temps["S"]['All'] = [x for x in helpers.read_obj('um10_brightness_temps_S_All') if not math.isnan(x)]
+        um10_brightness_temps["S"]['Clear'] = [x for x in helpers.read_obj('um10_brightness_temps_S_Clear') if not math.isnan(x)]
+        um10_brightness_temps["S"]['Thin'] = [x for x in helpers.read_obj('um10_brightness_temps_S_Thin') if not math.isnan(x)]
+        um10_brightness_temps["S"]['Thick'] = [x for x in helpers.read_obj('um10_brightness_temps_S_Thick') if not math.isnan(x)]
+        um20_brightness_temps["S"]['All'] = [x for x in helpers.read_obj('um20_brightness_temps_S_All') if not math.isnan(x)]
+        um20_brightness_temps["S"]['Clear'] = [x for x in helpers.read_obj('um20_brightness_temps_S_Clear') if not math.isnan(x)]
+        um20_brightness_temps["S"]['Thin'] = [x for x in helpers.read_obj('um20_brightness_temps_S_Thin') if not math.isnan(x)]
+        um20_brightness_temps["S"]['Thick'] = [x for x in helpers.read_obj('um20_brightness_temps_S_Thick') if not math.isnan(x)]
         
-        for season in ["W", "F/S", "S"]:
-            
+        #for season in ["W", "F/S", "S"]:
+        for season in ["S"]:
             season_sanitized = "FS" if season == "F/S" else season #Manually sanitize string to make it suitable for filename
             helpers.histogram_plot(um10_brightness_temps[season]['All'], './seasonal_plots/10um/' + season_sanitized + '_all')
             helpers.histogram_plot(um10_brightness_temps[season]['Clear'], './seasonal_plots/10um/' + season_sanitized + '_clear')
