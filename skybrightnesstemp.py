@@ -150,9 +150,10 @@ if __name__ == '__main__':
         # print(dataframes[0]['base_time'])
         # print(C1_dataframes[0]['base_time'])
 
+
         # Each key in dataframes_cdf is a date - iterate through all of them and count revelant info
         for ind,df in enumerate(dataframes_cdf):
-            
+            print(ind, df)             
             single_cdf_frame = dataframes_cdf[df]
             single_c1_frame = dataframes_C1[df]
 
@@ -209,7 +210,6 @@ if __name__ == '__main__':
 
         #Save some checkpoints
         for season in ["S", "F/S", "W"]:
-
             season_sanitized = "FS" if season == "F/S" else season #Manually sanitize string to make it suitable for C1_filename
             helpers.save_obj(um10_brightness_temps[season]['All'], "um10_brightness_temps_" + season_sanitized + "_All")
             helpers.save_obj(um10_brightness_temps[season]['Clear'], "um10_brightness_temps_" + season_sanitized + "_Clear")
@@ -221,18 +221,20 @@ if __name__ == '__main__':
             helpers.save_obj(um20_brightness_temps[season]['Thick'], "um20_brightness_temps_" + season_sanitized + "_Thick")
 
     else:
-        um10_brightness_temps["S"]['All'] = [x for x in helpers.read_obj('um10_brightness_temps_S_All') if not math.isnan(x)]
-        um10_brightness_temps["S"]['Clear'] = [x for x in helpers.read_obj('um10_brightness_temps_S_Clear') if not math.isnan(x)]
-        um10_brightness_temps["S"]['Thin'] = [x for x in helpers.read_obj('um10_brightness_temps_S_Thin') if not math.isnan(x)]
-        um10_brightness_temps["S"]['Thick'] = [x for x in helpers.read_obj('um10_brightness_temps_S_Thick') if not math.isnan(x)]
-        um20_brightness_temps["S"]['All'] = [x for x in helpers.read_obj('um20_brightness_temps_S_All') if not math.isnan(x)]
-        um20_brightness_temps["S"]['Clear'] = [x for x in helpers.read_obj('um20_brightness_temps_S_Clear') if not math.isnan(x)]
-        um20_brightness_temps["S"]['Thin'] = [x for x in helpers.read_obj('um20_brightness_temps_S_Thin') if not math.isnan(x)]
-        um20_brightness_temps["S"]['Thick'] = [x for x in helpers.read_obj('um20_brightness_temps_S_Thick') if not math.isnan(x)]
-        
-        #for season in ["W", "F/S", "S"]:
-        for season in ["S"]:
+
+        #um10_brightness_temps
+        for season in ["W", "F/S", "S"]:
+            
             season_sanitized = "FS" if season == "F/S" else season #Manually sanitize string to make it suitable for filename
+            um10_brightness_temps[season]['All'] = [x for x in helpers.read_obj('um10_brightness_temps_' + season_sanitized + '_All') if not math.isnan(x)]
+            um10_brightness_temps[season]['Clear'] = [x for x in helpers.read_obj('um10_brightness_temps_' + season_sanitized + '_Clear') if not math.isnan(x)]
+            um10_brightness_temps[season]['Thin'] = [x for x in helpers.read_obj('um10_brightness_temps_' + season_sanitized + '_Thin') if not math.isnan(x)]
+            um10_brightness_temps[season]['Thick'] = [x for x in helpers.read_obj('um10_brightness_temps_' + season_sanitized + '_Thick') if not math.isnan(x)]
+            um20_brightness_temps[season]['All'] = [x for x in helpers.read_obj('um20_brightness_temps_' + season_sanitized + '_All') if not math.isnan(x)]
+            um20_brightness_temps[season]['Clear'] = [x for x in helpers.read_obj('um20_brightness_temps_' + season_sanitized + '_Clear') if not math.isnan(x)]
+            um20_brightness_temps[season]['Thin'] = [x for x in helpers.read_obj('um20_brightness_temps_' + season_sanitized + '_Thin') if not math.isnan(x)]
+            um20_brightness_temps[season]['Thick'] = [x for x in helpers.read_obj('um20_brightness_temps_' + season_sanitized + '_Thick') if not math.isnan(x)]
+
             helpers.histogram_plot(um10_brightness_temps[season]['All'], './seasonal_plots/10um/' + season_sanitized + '_all')
             helpers.histogram_plot(um10_brightness_temps[season]['Clear'], './seasonal_plots/10um/' + season_sanitized + '_clear')
             helpers.histogram_plot(um10_brightness_temps[season]['Thin'], './seasonal_plots/10um/' + season_sanitized + '_thin')
@@ -254,12 +256,12 @@ if __name__ == '__main__':
             all_20um_counts['Thick'] += um20_brightness_temps[season]['Thick']
         
         # Plot overall pattern, without seasonal dependence
-        helpers.histogram_plot(all_10um_counts['All'], './non_seasonal_plots/10um/all')
-        helpers.histogram_plot(all_10um_counts['Clear'], './non_seasonal_plots/10um/clear')
-        helpers.histogram_plot(all_10um_counts['Thin'], './non_seasonal_plots/10um/all')
+        helpers.histogram_plot(all_10um_counts['All'], './non_seasonal_plots/10um/All')
+        helpers.histogram_plot(all_10um_counts['Clear'], './non_seasonal_plots/10um/Clear')
+        helpers.histogram_plot(all_10um_counts['Thin'], './non_seasonal_plots/10um/Thin')
         helpers.histogram_plot(all_10um_counts['Thick'], './non_seasonal_plots/10um/Thick')
 
-        helpers.histogram_plot(all_20um_counts['All'], './non_seasonal_plots/20um/all')
+        helpers.histogram_plot(all_20um_counts['All'], './non_seasonal_plots/20um/All')
         helpers.histogram_plot(all_20um_counts['Clear'], './non_seasonal_plots/20um/Clear')
         helpers.histogram_plot(all_20um_counts['Thin'], './non_seasonal_plots/20um/Thin')
         helpers.histogram_plot(all_20um_counts['Thick'], './non_seasonal_plots/20um/Thick')
