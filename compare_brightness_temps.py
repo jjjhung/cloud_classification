@@ -163,7 +163,7 @@ if __name__ == '__main__':
         cdf_grp = cdf_temp.groupby(['time'])
         c1_grp = single_c1_frame.groupby(['time'])
 
-        differences10, differences20 = [], []
+        differences10, differences20, calculated_10, calculated_20, cdf_10, cdf_20 = [], [], [], [], [] ,[]
 
         for timee in time_values:
             try:
@@ -188,7 +188,6 @@ if __name__ == '__main__':
             brighttemp_10 = truncated10um_brighttemp['avg_brightness_temp'].mean()
             brighttemp_20 = truncated20um_brighttemp['avg_brightness_temp'].mean()
 
-            
             intermediary10 = read_wavenumber_slice_set(small_series_cdf, 10)
             intermediary20 = read_wavenumber_slice_set(small_series_cdf, 20)
 
@@ -205,6 +204,12 @@ if __name__ == '__main__':
                 differences10.append(abs(brightness_temps_10 - brighttemp_10))
                 differences20.append(abs(brightness_temps_20 - brighttemp_20))
 
+                calculated_10.append(brighttemp_10)
+                calculated_20.append(brighttemp_20)
+
+                cdf_10.append(brightness_temps_10)
+                cdf_20.append(brightness_temps_20)
+
             except:
                 print(intermediary10.iloc[0]['SkyBrightnessTempSpectralAveragesCh1'])
                 print(brightness_temps_20)
@@ -212,7 +217,20 @@ if __name__ == '__main__':
             
         helpers.create_dir('./difference_plots/10um')
         helpers.create_dir('./difference_plots/20um')
-        differences10 = [x for x in differences10 if not math.isnan(x)]
-        differences20 = [x for x in differences20 if not math.isnan(x)]
-        histogram_plot(differences10, "./difference_plots/10um/" + str(date))
-        histogram_plot(differences20, "./difference_plots/20um/" + str(date))
+
+        helpers.save_obj(differences10, 'differences10')
+        helpers.save_obj(differences20, 'differences20')
+        helpers.save_obj(calculated_10, 'calculated_10')
+        helpers.save_obj(calculated_20, 'calculated_20')
+        helpers.save_obj(cdf_10, 'cdf_10')
+        helpers.save_obj(cdf_20, 'cdf_20')
+
+        sns.tsplot(data=differences10)
+        plt.savefig('./difference_plots/10diff')
+        plt.clf()
+
+        # differences10 = [x for x in differences10 if not math.isnan(x)]
+        # differences20 = [x for x in differences20 if not math.isnan(x)]
+        # histogram_plot(differences10, "./difference_plots/10um/" + str(date))
+        # histogram_plot(differences20, "./difference_plots/20um/" + str(date))
+
