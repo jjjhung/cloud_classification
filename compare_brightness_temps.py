@@ -37,6 +37,29 @@ def avg_brightness_temp(df):
     return temp_df
 
 
+def plot(df, axis_x, axis_y, save_path):
+    '''
+    Plots a particular dataframe with given x and y axes
+    Saves plotted figure to provided path
+    '''
+
+    sns.lineplot(axis_x, axis_y,data=df)
+    plt.savefig(save_path)
+    plt.clf()
+
+
+
+def save_plot(date, year, data):
+    '''
+    Wrapper for plotting function - checks if appropriate organizing folders exist and 
+        plot radiance against wavenumber
+
+        Saves plots in ./[year]_plots/[date]
+    '''
+    path_save = './' + str(year) + '_plots/' + date[0] + '/' + date[1]
+    helpers.create_dir('./' + str(year) + '_plots/' + date[0])
+    plot(data, 'wnum1', 'mean_rad', path_save)
+
 def histogram_plot(data, save_path):
 
     if data == []:
@@ -100,6 +123,7 @@ def read_dataframes(years):
                     sample2 = xr.open_dataset(prepended_dir + "/" + C1_filename)
                     rad = sample2[['date','base_time','time_offset','mean_rad']]
 
+                    #print(sample2.to_dataframe().columns.values)
                     pandified2 = rad.to_dataframe()
                     pandified['base_time'] = pd.to_datetime(pandified['base_time'])
                     pandified2['base_time'] = pd.to_datetime(pandified2['base_time'])
@@ -126,6 +150,7 @@ if __name__ == '__main__':
     #years = [2008,2009,2011,2012,2013,2014]
     years = [2008]
 
+    #mean_day_10 = []
     dataframes_C1, dataframes_cdf = read_dataframes(years)
     # print(dataframes[0]['base_time'])
     # print(C1_dataframes[0]['base_time'])
@@ -152,6 +177,7 @@ if __name__ == '__main__':
         single_cdf_frame = dataframes_cdf[df]
         single_c1_frame = dataframes_C1[df]
 
+        #print(single_c1_frame)
         try:
             cdf_temp = single_cdf_frame.reset_index()
             c1_temp = single_c1_frame.reset_index()
@@ -188,9 +214,11 @@ if __name__ == '__main__':
             brighttemp_10 = truncated10um_brighttemp['avg_brightness_temp'].mean()
             brighttemp_20 = truncated20um_brighttemp['avg_brightness_temp'].mean()
 
-            
+            #print(small_series_cdf)
+            #print(small_series_c1)
             intermediary10 = read_wavenumber_slice_set(small_series_cdf, 10)
             intermediary20 = read_wavenumber_slice_set(small_series_cdf, 20)
+
 
             date = str(small_series_c1.iloc[0]['time_offset']).split(' ')  
         
@@ -216,3 +244,7 @@ if __name__ == '__main__':
         differences20 = [x for x in differences20 if not math.isnan(x)]
         histogram_plot(differences10, "./difference_plots/10um/" + str(date))
         histogram_plot(differences20, "./difference_plots/20um/" + str(date))
+
+        #mean_day_10.append(differences10.mean())
+
+#
