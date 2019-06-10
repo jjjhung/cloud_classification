@@ -235,15 +235,15 @@ if __name__ == '__main__':
             um20_brightness_temps[season]['Thin'] = [x for x in helpers.read_obj('um20_brightness_temps_' + season_sanitized + '_Thin') if not math.isnan(x)]
             um20_brightness_temps[season]['Thick'] = [x for x in helpers.read_obj('um20_brightness_temps_' + season_sanitized + '_Thick') if not math.isnan(x)]
 
-            helpers.histogram_plot(um10_brightness_temps[season]['All'], './seasonal_plots/10um/' + season_sanitized + '_all')
-            helpers.histogram_plot(um10_brightness_temps[season]['Clear'], './seasonal_plots/10um/' + season_sanitized + '_clear')
-            helpers.histogram_plot(um10_brightness_temps[season]['Thin'], './seasonal_plots/10um/' + season_sanitized + '_thin')
-            helpers.histogram_plot(um10_brightness_temps[season]['Thick'], './seasonal_plots/10um/' + season_sanitized + '_thick')
+            helpers.histogram_plot(um10_brightness_temps[season]['All'], './seasonal_plots/10um/' + season_sanitized + '_all', 'black',False,"All Sky")
+            helpers.histogram_plot(um10_brightness_temps[season]['Clear'], './seasonal_plots/10um/' + season_sanitized + '_clear','blue',False,"Clear Sky")
+            helpers.histogram_plot(um10_brightness_temps[season]['Thin'], './seasonal_plots/10um/' + season_sanitized + '_thin','purple',False,'Thin Cloud')
+            helpers.histogram_plot(um10_brightness_temps[season]['Thick'], './seasonal_plots/10um/' + season_sanitized + '_thick','red',True,'Thick Cloud"')
 
-            helpers.histogram_plot(um20_brightness_temps[season]['All'], './seasonal_plots/20um/' + season_sanitized + '_all')
-            helpers.histogram_plot(um20_brightness_temps[season]['Clear'], './seasonal_plots/20um/' + season_sanitized + '_clear')
-            helpers.histogram_plot(um20_brightness_temps[season]['Thin'], './seasonal_plots/20um/' + season_sanitized + '_thin')
-            helpers.histogram_plot(um20_brightness_temps[season]['Thick'], './seasonal_plots/20um/' + season_sanitized + '_thick')
+            helpers.histogram_plot(um20_brightness_temps[season]['All'], './seasonal_plots/20um/' + season_sanitized + '_all','black',False,"All Sky")
+            helpers.histogram_plot(um20_brightness_temps[season]['Clear'], './seasonal_plots/20um/' + season_sanitized + '_clear','blue',False,"Clear Sky")
+            helpers.histogram_plot(um20_brightness_temps[season]['Thin'], './seasonal_plots/20um/' + season_sanitized + '_thin','purple',False,'Thin Cloud')
+            helpers.histogram_plot(um20_brightness_temps[season]['Thick'], './seasonal_plots/20um/' + season_sanitized + '_thick','red',True,'Thick Cloud"')
 
             all_10um_counts['All'] += um10_brightness_temps[season]['All'] 
             all_10um_counts['Clear'] += um10_brightness_temps[season]['Clear']
@@ -256,12 +256,13 @@ if __name__ == '__main__':
             all_20um_counts['Thick'] += um20_brightness_temps[season]['Thick']
         
         # Plot overall pattern, without seasonal dependence
-        helpers.histogram_plot(all_10um_counts['All'], './non_seasonal_plots/10um/All')
-        helpers.histogram_plot(all_10um_counts['Clear'], './non_seasonal_plots/10um/Clear')
-        helpers.histogram_plot(all_10um_counts['Thin'], './non_seasonal_plots/10um/Thin')
-        helpers.histogram_plot(all_10um_counts['Thick'], './non_seasonal_plots/10um/Thick')
+        helpers.histogram_plot(all_10um_counts['All'], './non_seasonal_plots/10um/All','black',False,"All Sky")
+        helpers.histogram_plot(all_10um_counts['Clear'], './non_seasonal_plots/10um/Clear','blue',False,"Clear Sky")
+        helpers.histogram_plot(all_10um_counts['Thin'], './non_seasonal_plots/10um/Thin','purple',False,'Thin Cloud')
+        helpers.histogram_plot(all_10um_counts['Thick'], './non_seasonal_plots/10um/Thick','red',True,'Thick Cloud"')
 
-        helpers.histogram_plot(all_20um_counts['All'], './non_seasonal_plots/20um/All')
-        helpers.histogram_plot(all_20um_counts['Clear'], './non_seasonal_plots/20um/Clear')
-        helpers.histogram_plot(all_20um_counts['Thin'], './non_seasonal_plots/20um/Thin')
-        helpers.histogram_plot(all_20um_counts['Thick'], './non_seasonal_plots/20um/Thick')
+
+        helpers.histogram_plot(all_20um_counts['All'], './non_seasonal_plots/20um/All','black',False,"All Sky")
+        helpers.histogram_plot(all_20um_counts['Clear'], './non_seasonal_plots/20um/Clear','blue',False,"Clear Sky")
+        helpers.histogram_plot(all_20um_counts['Thin'], './non_seasonal_plots/20um/Thin','purple',False,'Thin Cloud')
+        helpers.histogram_plot(all_20um_counts['Thick'], './non_seasonal_plots/20um/Thick','red',True,'Thick Cloud"')

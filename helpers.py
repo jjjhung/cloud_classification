@@ -22,14 +22,6 @@ def brightness_temp(radiance, wnum):
     '''
     wavenum = wnum * 100 # Convert wavenumber to 1/m
 
-    # ln_elements = 2 * constants.Planck * (constants.speed_of_light ** 2)
-    # ln_elements /= (radiance * (wavelength ** 5))
-    # ln_elements += 1
-
-    # coeff = (constants.Planck * constants.speed_of_light) / (constants.Boltzmann * wavelength)
-
-    # divid = coeff / sp.log(ln_elements)
-
     ln_elements = -2 * constants.Planck * (wavenum**3) * (constants.speed_of_light**2) / (radiance/1000)
     ln_elements += 1
     
@@ -45,12 +37,6 @@ def brightness_temp(radiance, wnum):
     real = 1000 if real > 1000 else real
 
     return real
-
-    #divid = divid / (wavenum ** 2)
-    # Times  1/wavenumber**2
-
-    #Sometimes the result is complex..? I think this is because the source data is complex sometimes too
-    #return divid if not np.iscomplex(divid) else np.real(divid)
 
 
 def load_files(year):
@@ -129,13 +115,16 @@ def read_obj(name):
 
     return obj
  
-def histogram_plot(data, save_path):
+def histogram_plot(data, save_path, color, save, legend):
 
     if data == []:
         return 
-    sns.distplot(data, kde=False, rug=True)
-    plt.savefig(save_path)
-    plt.clf()
+    sns.distplot(data, kde=False, hist_kws={"histtype":"step", "color": color, "label": legend})
+
+    if save:
+        plt.legend()
+        plt.savefig(save_path)
+        plt.clf()
 
 
 
