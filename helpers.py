@@ -21,8 +21,10 @@ def brightness_temp(radiance, wnum):
 
     '''
     wavenum = wnum * 100 # Convert wavenumber to 1/m
+    radiance /= 1000 # Convert mW to W
+    #radiance *= 100 # Convert 1/cm to 1/mW
 
-    ln_elements = -2 * constants.Planck * (wavenum**3) * (constants.speed_of_light**2) / (radiance/1000)
+    ln_elements = -2 * constants.Planck * (wavenum**3) * (constants.speed_of_light**2) / (radiance)
     ln_elements += 1
     
     coeff = constants.Planck * constants.speed_of_light * wavenum / constants.Boltzmann 
@@ -126,6 +128,29 @@ def histogram_plot(data, save_path, color, save, legend):
         plt.savefig(save_path)
         plt.clf()
 
+
+def plot(df, axis_x, axis_y, save_path):
+    '''
+    Plots a particular dataframe with given x and y axes
+    Saves plotted figure to provided path
+    '''
+
+    sns.lineplot(axis_x, axis_y,data=df)
+    plt.savefig(save_path)
+    plt.clf()
+
+
+
+def save_plot(date, year, data):
+    '''
+    Wrapper for plotting function - checks if appropriate organizing folders exist and 
+        plot radiance against wavenumber
+
+        Saves plots in ./[year]_plots/[date]
+    '''
+    path_save = './' + str(year) + '_plots/' + date[0] + '/' + date[1]
+    helpers.create_dir('./' + str(year) + '_plots/' + date[0])
+    plot(data, 'wnum1', 'mean_rad', path_save)
 
 
 def det_season(date):

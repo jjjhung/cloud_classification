@@ -30,7 +30,7 @@ def avg_brightness_temp(df):
 
     return temp_df
 
-
+        
 
 def plot(df, axis_x, axis_y, save_path):
     '''
@@ -238,27 +238,27 @@ if __name__ == '__main__':
     for season in ["W", "F/S", "S"]:
         
         season_sanitized = "FS" if season == "F/S" else season #Manually sanitize string to make it suitable for filename
-        helpers.histogram_plot(um10_counts[season]['All'], './seasonal_plots/10um/' + season_sanitized + '_all')
-        helpers.histogram_plot(um10_counts[season]['Clear'], './seasonal_plots/10um/' + season_sanitized + '_clear')
-        helpers.histogram_plot(um10_counts[season]['Thin'], './seasonal_plots/10um/' + season_sanitized + '_thin')
-        helpers.histogram_plot(um10_counts[season]['Thick'], './seasonal_plots/10um/' + season_sanitized + '_thick')
+        helpers.histogram_plot(pd.Series(um10_counts[season]['All'], name="10um Brightness Temperature(K)"), './seasonal_plots/10um/' + season_sanitized + '_all')
+        helpers.histogram_plot(pd.Series(um10_counts[season]['Clear'], name="10um Brightness Temperature(K)"), './seasonal_plots/10um/' + season_sanitized + '_clear')
+        helpers.histogram_plot(pd.Series(um10_counts[season]['Thin'], name="10um Brightness Temperature(K)"), './seasonal_plots/10um/' + season_sanitized + '_thin')
+        helpers.histogram_plot(pd.Series(um10_counts[season]['Thick'], name="10um Brightness Temperature(K)"), './seasonal_plots/10um/' + season_sanitized + '_thick')
 
-        helpers.histogram_plot(um20_counts[season]['All'], './seasonal_plots/20um/' + season_sanitized + '_all')
-        helpers.histogram_plot(um20_counts[season]['Clear'], './seasonal_plots/20um/' + season_sanitized + '_clear')
-        helpers.histogram_plot(um20_counts[season]['Thin'], './seasonal_plots/20um/' + season_sanitized + '_thin')
-        helpers.histogram_plot(um20_counts[season]['Thick'], './seasonal_plots/20um/' + season_sanitized + '_thick')
+        helpers.histogram_plot(pd.Series(um20_counts[season]['All'], name="20um Brightness Temperature(K)"), './seasonal_plots/20um/' + season_sanitized + '_all')
+        helpers.histogram_plot(pd.Series(um20_counts[season]['Clear'], name="20um Brightness Temperature(K)"), './seasonal_plots/20um/' + season_sanitized + '_clear')
+        helpers.histogram_plot(pd.Series(um20_counts[season]['Thin'], name="20um Brightness Temperature(K)"), './seasonal_plots/20um/' + season_sanitized + '_thin')
+        helpers.histogram_plot(pd.Series(um20_counts[season]['Thick'], name="20um Brightness Temperature(K)"), './seasonal_plots/20um/' + season_sanitized + '_thick')
 
 
     # Plot overall pattern, without seasonal dependence
-    helpers.histogram_plot(all_10um_counts['All'], './non_seasonal_plots/10um/all')
-    helpers.histogram_plot(all_10um_counts['Clear'], './non_seasonal_plots/10um/clear')
-    helpers.histogram_plot(all_10um_counts['Thin'], './non_seasonal_plots/10um/all')
-    helpers.histogram_plot(all_10um_counts['Thick'], './non_seasonal_plots/10um/Thick')
+    helpers.histogram_plot(pd.Series(all_10um_counts['All'],name="10um Brightness Temperature (K)"), './non_seasonal_plots/10um/all')
+    helpers.histogram_plot(pd.Series(all_10um_counts['Clear'],name="10um Brightness Temperature (K)"), './non_seasonal_plots/10um/clear')
+    helpers.histogram_plot(pd.Series(all_10um_counts['Thin'],name="10um Brightness Temperature (K)"), './non_seasonal_plots/10um/all')
+    helpers.histogram_plot(pd.Series(all_10um_counts['Thick'],name="10um Brightness Temperature (K)"), './non_seasonal_plots/10um/Thick')
 
-    helpers.histogram_plot(all_20um_counts['All'], './non_seasonal_plots/20um/all')
-    helpers.histogram_plot(all_20um_counts['Clear'], './non_seasonal_plots/20um/Clear')
-    helpers.histogram_plot(all_20um_counts['Thin'], './non_seasonal_plots/20um/Thin')
-    helpers.histogram_plot(all_20um_counts['Thick'], './non_seasonal_plots/20um/Thick')
+    helpers.histogram_plot(pd.Series(all_20um_counts['All'], name="20um Brightness Temperature"), './non_seasonal_plots/20um/all')
+    helpers.histogram_plot(pd.Series(all_20um_counts['Clear'], name="20um Brightness Temperature"), './non_seasonal_plots/20um/Clear')
+    helpers.histogram_plot(pd.Series(all_20um_counts['Thin'], name="20um Brightness Temperature"), './non_seasonal_plots/20um/Thin')
+    helpers.histogram_plot(pd.Series(all_20um_counts['Thick'], name="20um Brightness Temperature"), './non_seasonal_plots/20um/Thick')
 
 
 
