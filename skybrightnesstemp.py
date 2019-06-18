@@ -24,7 +24,7 @@ sns.set(style="darkgrid")
 
 PARAMS = {"LOAD_DATA_FROM_SCRATCH": False, 
           "PLOT_DATA": False,
-          "RUN_PROGRAM_FROM_SCRATCH": False}
+          "RUN_PROGRAM_FROM_SCRATCH": True}
 
 def avg_brightness_temp(df):
     '''
@@ -181,7 +181,8 @@ if __name__ == '__main__':
                 truncated_850_950 = helpers.read_wavenumber_slice(small_series_c1, (850,950))
                 truncated_850_950.mean_rad = truncated_850_950.mean_rad / 1000
                 # Get brightness temperature at 10um
-                intermediary = read_wavenumber_slice_set(small_series_cdf, 10)
+                intermediary_10 = read_wavenumber_slice_set(small_series_cdf, 10)
+                intermediary_20 = read_wavenumber_slice_set(small_series_cdf, 20)
 
 
                 date = str(small_series_c1.iloc[0]['time_offset']).split(' ')  
@@ -190,22 +191,25 @@ if __name__ == '__main__':
 
 
                 try:
-                    brightness_temps = intermediary.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
+                    brightness_temps_10 = intermediary.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
+                    brightness_temps_20 = intermediary.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
                     #print(brightness_temps)
-                    um10_brightness_temps[season]['All'].append(brightness_temps)
-                    um10_brightness_temps[season][cloudy].append(brightness_temps)
+                    um10_brightness_temps[season]['All'].append(brightness_temps_10)
+                    um10_brightness_temps[season][cloudy].append(brightness_temps_10)
 
-                    um20_brightness_temps[season]['All'].append(brightness_temps)
-                    um20_brightness_temps[season][cloudy].append(brightness_temps)
+
+                    um20_brightness_temps[season]['All'].append(brightness_temps_20)
+                    um20_brightness_temps[season][cloudy].append(brightness_temps_20)
                 except:
-                    #print(intermediary.iloc[0])
+                    print(brightness_temps_10)
+                    print(brightness_temps_20)
                     continue
        
                 cloudy_counts[cloudy] += 1
         #return {'10um': um10_brightess_temps, '20um':um20_brightness_temps}, cloudy_counts
 
-        print(um10_brightness_temps)
-        print(cloudy_counts)
+            # print(um10_brightness_temps)
+            # print(cloudy_counts)
 
 
         #Save some checkpoints
@@ -222,14 +226,15 @@ if __name__ == '__main__':
 
     else:
 
+
         #um10_brightness_temps
         for season in ["W", "F/S", "S"]:
-            
             season_sanitized = "FS" if season == "F/S" else season #Manually sanitize string to make it suitable for filename
             um10_brightness_temps[season]['All'] = [x for x in helpers.read_obj('um10_brightness_temps_' + season_sanitized + '_All') if not math.isnan(x)]
             um10_brightness_temps[season]['Clear'] = [x for x in helpers.read_obj('um10_brightness_temps_' + season_sanitized + '_Clear') if not math.isnan(x)]
             um10_brightness_temps[season]['Thin'] = [x for x in helpers.read_obj('um10_brightness_temps_' + season_sanitized + '_Thin') if not math.isnan(x)]
             um10_brightness_temps[season]['Thick'] = [x for x in helpers.read_obj('um10_brightness_temps_' + season_sanitized + '_Thick') if not math.isnan(x)]
+
             um20_brightness_temps[season]['All'] = [x for x in helpers.read_obj('um20_brightness_temps_' + season_sanitized + '_All') if not math.isnan(x)]
             um20_brightness_temps[season]['Clear'] = [x for x in helpers.read_obj('um20_brightness_temps_' + season_sanitized + '_Clear') if not math.isnan(x)]
             um20_brightness_temps[season]['Thin'] = [x for x in helpers.read_obj('um20_brightness_temps_' + season_sanitized + '_Thin') if not math.isnan(x)]

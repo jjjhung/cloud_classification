@@ -55,10 +55,10 @@ def load_files(year):
     #prepended_dir = '../' + str(year)  # For running on the server
     prepended_dir = str(year)
 
-    C1_dataframes = [], []
+    C1_dataframes = []
     for file in os.listdir(prepended_dir):
         if re.search('[0-9]*C1.cdf', file): #This finds all the YYMMDDC1.cdf files
-            C1_dataframes += [xr.open_dataset(prepended_dir + '/' + file).to_dataframe()]
+            C1_dataframes.append(xr.open_dataset(prepended_dir + '/' + file).to_dataframe())
         if re.search('^[0-9]*(?!C1|C2).cdf', file):  # Use negative lookahead to find YYMMDD.cdf files only
             pass 
         # if re.search('[0-9]*C2.cdf', file): #This finds all the C2 files

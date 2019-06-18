@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 sns.set(style="darkgrid")
 
-PARAMS = {"LOAD_DATA_FROM_SCRATCH": False, 
+PARAMS = {"LOAD_DATA_FROM_SCRATCH": True, 
           "PLOT_DATA": False}
 
 def avg_brightness_temp(df):
@@ -38,7 +38,7 @@ def plot(df, axis_x, axis_y, save_path):
     Saves plotted figure to provided path
     '''
 
-    sns.lineplot(axis_x, axis_y,data=df)
+    sns.lineplot(axis_x, axis_y,data=df) 
     plt.savefig(save_path)
     plt.clf()
 
@@ -52,8 +52,67 @@ def save_plot(date, year, data):
         Saves plots in ./[year]_plots/[date]
     '''
     path_save = './' + str(year) + '_plots/' + date[0] + '/' + date[1]
-    helpers.create_dir('./' + str(year) + '_plots/' + date[0])
+
+    if not os.path.exists('./' + str(year) + '_plots/' + date[0]):
+        os.makedirs('./' + str(year) + '_plots/' + date[0])
+    
     plot(data, 'wnum1', 'mean_rad', path_save)
+
+def det_season(date):
+    month = int(date[0][5:7])
+
+    if month >= 6 and month <= 8:
+        season = "S"
+    elif month == 5 or month == 9:
+        season = "F/S"
+    else:
+        season = "W"
+
+    return season
+
+def winter_radiances(rad):
+    #rad = rad / 1000
+
+    #print(rad)
+    if rad < 0.0015:
+        return "Clear"
+    elif rad <= 0.009:
+        return "Thin"
+    else:
+        return "Thick"
+
+def fallspr_radiances(rad):
+    #rad = rad / 1000
+
+    if rad < 0.007:
+        return "Clear"
+    elif rad <= 0.02:
+        return "Thin"
+    else:
+        return "Thick"
+
+def summer_radiances(rad):
+    #radiance = rad / 1000
+
+    if rad < 0.015:
+        return "Clear"
+    elif rad <= 0.045:
+        return "Thin"
+    else:
+        return "Thick"
+
+def cloudify(date, df):
+    season = det_season(date)
+    temp_df = df
+    
+    rad_mean = temp_df['mean_rad'].mean()
+
+    if season == 'W': #Winter
+        return winter_radiances(rad_mean), season
+    elif season == 'F/S': #Fall / Spring
+        return fallspr_radiances(rad_mean), season
+    elif season == 'S': #Summer
+        return summer_radiances(rad_mean), season
 
 
 def read_wavenumber_slice(df, slice_range):
@@ -80,7 +139,7 @@ def read_files(year):
     C1_dataframes = []
 
     if PARAMS['LOAD_DATA_FROM_SCRATCH']:
-        C1_dataframes = load_files(year)
+        C1_dataframes = helpers.load_files(year)
         helpers.save_obj(C1_dataframes, 'C1_dataframes_' + str(year))
 
     else:
@@ -115,25 +174,28 @@ def read_files(year):
 
             if PARAMS['PLOT_DATA']: 
                 save_plot(date, year, small_series)
-            
+
             truncated_850_950 = helpers.read_wavenumber_slice(small_series, (850,950))
             truncated_850_950.mean_rad = truncated_850_950.mean_rad / 1000
 
 
             # Classify scene as clear/thin/thick cloudy, and season of measurement
-            cloudy, season = helpers.cloudify(date, truncated_850_950)
+            cloudy, season = cloudify(date, truncated_850_950)
+            cloudy_counts[cloudy] += 1
+
 
             # Wavenumbers truncated in the 10um range, can be plotted to visualize
-            truncated_10um = helpers.read_wavenumber_slice(small_series, (985,998))
-            truncated_20um = helpers.read_wavenumber_slice(small_series, (529.9, 532))
+            #truncated_10um = helpers.read_wavenumber_slice(small_series, (985,998))
+            #truncated_20um = helpers.read_wavenumber_slice(small_series, (529.9, 532))
             #save_plot(date, year, truncated_10um)
             #save_plot(date, year, truncated_20um)
 
             #10um wavenumbers with brightness temperature calculations added as additional col
-            truncated10um_brighttemp = avg_brightness_temp(truncated_10um)
-            truncated20um_brighttemp = avg_brightness_temp(truncated_20um)
+            #truncated10um_brighttemp = avg_brightness_temp(truncated_10um)
+            #print(truncated10um_brighttemp)
+            #truncated20um_brighttemp = avg_brightness_temp(truncated_20um)
 
-
+            '''
             try:
                 holder = truncated10um_brighttemp['avg_brightness_temp'].mean()
                 um10_brightness_temps[season]['All'] += [holder]
@@ -148,8 +210,7 @@ def read_files(year):
                 print(e)
                 printt(truncated19um_brighttemp)
             #print('20um mean', holder)
-
-            cloudy_counts[cloudy] += 1
+            '''
 
     print(year, cloudy_counts)
 
@@ -163,7 +224,8 @@ def read_files(year):
 
 if __name__ == '__main__':
     #years = [2008,2009,2011,2012,2013,2014]:
-    years = [2008]
+    #years = [2008]
+    years = [2015,2016,2017]    
 
     brightness_template = {"All": [], "Clear": [], "Thin": [], "Thick": []}
 
