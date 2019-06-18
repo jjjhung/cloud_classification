@@ -99,7 +99,7 @@ def read_wavenumber_slice_set(df, slice_range):
 
 
 def read_dataframes(years):
-    xarrays, dataframes_C1, dataframes_cdf = [], {}, {}
+    xarrays, dataframes_C1, dataframes_cdf = [], [], []
 
     for year in years:
         if PARAMS['LOAD_DATA_FROM_SCRATCH']:
@@ -133,15 +133,15 @@ def read_dataframes(years):
                     #     dataframes_cdf[date] += [pandified]
                     #     dataframes_C1[date] += [pandified2]
                     # else:
-                    dataframes_cdf[date] = pandified
-                    dataframes_C1[date] = pandified2
+                    dataframes_cdf.append(pandified)
+                    dataframes_C1.append(pandified2)
 
-            helpers.save_obj(dataframes_C1,"dataframes_C1_" + str(year))
-            helpers.save_obj(dataframes_cdf,"dataframes_cdf_" + str(year))
+            helpers.save_obj(dataframes_C1,"dataframes_C1_list_" + str(year))
+            helpers.save_obj(dataframes_cdf,"dataframes_cdf_list_" + str(year))
     
         else:
-            dataframes_C1 = helpers.read_obj("dataframes_C1_" + str(year))
-            dataframes_cdf = helpers.read_obj("dataframes_cdf_" + str(year))
+            dataframes_C1 = helpers.read_obj("dataframes_C1_list_" + str(year))
+            dataframes_cdf = helpers.read_obj("dataframes_cdf_list_" + str(year))
 
     return dataframes_C1, dataframes_cdf
 
@@ -174,8 +174,8 @@ if __name__ == '__main__':
     for ind,df in enumerate(dataframes_cdf):
         
         print(ind)
-        single_cdf_frame = dataframes_cdf[df]
-        single_c1_frame = dataframes_C1[df]
+        single_cdf_frame = dataframes_cdf[ind]
+        single_c1_frame = dataframes_C1[ind]
 
         #print(single_c1_frame)
         try:
@@ -189,7 +189,7 @@ if __name__ == '__main__':
         cdf_grp = cdf_temp.groupby(['time'])
         c1_grp = single_c1_frame.groupby(['time'])
 
-        differences10, differences20, calculated_10, calculated_20, cdf_10, cdf_20 = [], [], [], [], [] ,[]
+        differences10, differences20, calculated_10, calculated_20, values_cdf_10, values_cdf_20 = [], [], [], [], [] ,[]
 
         for timee in time_values:
             try:
@@ -201,6 +201,7 @@ if __name__ == '__main__':
             except:
                 continue
 
+            #print(small_series_c1)
             truncated_850_950 = helpers.read_wavenumber_slice(small_series_c1, (850,950))
             truncated_850_950.mean_rad = truncated_850_950.mean_rad / 1000
             # Get brightness temperature at 10um
@@ -229,39 +230,47 @@ if __name__ == '__main__':
                 brightness_temps_10 = intermediary10.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
                 brightness_temps_20 = intermediary20.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
                 
-                differences10.append(abs(brightness_temps_10 - brighttemp_10))
-                differences20.append(abs(brightness_temps_20 - brighttemp_20))
+                #differences10.append(abs(brightness_temps_10 - brighttemp_10))
+                #differences20.append(abs(brightness_temps_20 - brighttemp_20))
 
                 calculated_10.append(brighttemp_10)
                 calculated_20.append(brighttemp_20)
 
-                cdf_10.append(brightness_temps_10)
-                cdf_20.append(brightness_temps_20)
+                values_cdf_10.append(brightness_temps_10)
+                values_cdf_20.append(brightness_temps_20)
 
             except:
                 print(intermediary10.iloc[0]['SkyBrightnessTempSpectralAveragesCh1'])
                 print(brightness_temps_20)
                 print(differences10)
-            
+                continue
+
         helpers.create_dir('./difference_plots/10um')
         helpers.create_dir('./difference_plots/20um')
 
-        differences10 = [x for x in differences10 if not math.isnan(x)]
-        differences20 = [x for x in differences20 if not math.isnan(x)]
-        histogram_plot(differences10, "./difference_plots/10um/" + str(date))
-        histogram_plot(differences20, "./difference_plots/20um/" + str(date))
+        #differences10 = [x for x in differences10 if not math.isnan(x)]
+        #differences20 = [x for x in differences20 if not math.isnan(x)]
+        #histogram_plot(differences10, "./difference_plots/10um/" + str(date))
+        #histogram_plot(differences20, "./difference_plots/20um/" + str(date))
 
         #mean_day_10.append(differences10.mean())
 
-        helpers.save_obj(differences10, 'differences10')
-        helpers.save_obj(differences20, 'differences20')
+        # helpers.save_obj(differences10, 'differences10')
+        # helpers.save_obj(differences20, 'differences20')
         helpers.save_obj(calculated_10, 'calculated_10')
         helpers.save_obj(calculated_20, 'calculated_20')
-        helpers.save_obj(cdf_10, 'cdf_10')
-        helpers.save_obj(cdf_20, 'cdf_20')
+        helpers.save_obj(values_cdf_10, 'cdf_10')
+        helpers.save_obj(values_cdf_20, 'cdf_20')
 
-        sns.tsplot(data=differences10)
-        plt.savefig('./difference_plots/10diff')
+
+        sns.tsplot(data=calculated_10, color="g")
+        sns.tsplot(data=values_cdf_10, color="r")
+        plt.savefig('./difference_plots/10diff_' + str(date))
+        plt.clf()
+
+        sns.tsplot(data=calculated_20, color='g')
+        sns.tsplot(data=values_cdf_20, color='r')
+        plt.savefig('./difference_plots/20diff_' + str(date))
         plt.clf()
 
         # differences10 = [x for x in differences10 if not math.isnan(x)]
