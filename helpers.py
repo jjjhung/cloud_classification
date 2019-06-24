@@ -22,7 +22,9 @@ def brightness_temp(radiance, wnum):
     '''
     wavenum = wnum * 100 # Convert wavenumber to 1/m
     radiance /= 1000 # Convert mW to W
-    #radiance *= 100 # Convert 1/cm to 1/mW
+    radiance /= -100
+
+    #radiance /= (2*constants.pi**2)
 
     ln_elements = -2 * constants.Planck * (wavenum**3) * (constants.speed_of_light**2) / (radiance)
     ln_elements += 1
@@ -39,6 +41,20 @@ def brightness_temp(radiance, wnum):
     real = 1000 if real > 1000 else real
 
     return real
+
+def coefficient_calculate(wavenum, temp, intensity):
+    '''
+    Calcutes the solid angle adjustment factor for converting the field of view in radians
+    to the steradians given in the provided radiances
+    '''
+
+    expon = constants.Planck * constants.speed_of_light * wavenum / (temp * constants.Boltzmann)
+    expon = np.exp(expon)
+    expon = 1 - expon
+
+    expon = 1/expon
+
+    return expon * 2 * constants.Planck * constants.speed_of_light**2 * wavenum ** 3 / intensity
 
 
 def load_files(year):
