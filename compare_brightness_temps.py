@@ -116,10 +116,10 @@ def read_dataframes(years):
                     #dropped_sample = sample.drop_dims(['wnum2','wnum1','wnum3','wnum4','wnum12'])
                     #dropped_sample = sample.drop_dims(['wnum2'])
 
-                    #print(sample)
-                    skybrightness_temps = sample[['SkyBrightnessTempSpectralAveragesCh1','date','base_time']]
+    
+                    skybrightness_temps = sample[['SkyRadianceSpectralAveragesCh1', 'SkyBrightnessTempSpectralAveragesCh1','date','base_time']]
                     pandified = skybrightness_temps.to_dataframe()
-                    
+                    print(pandified)
                     sample2 = xr.open_dataset(prepended_dir + "/" + C1_filename)
                     rad = sample2[['date','base_time','time_offset','mean_rad']]
 
@@ -189,7 +189,8 @@ if __name__ == '__main__':
         cdf_grp = cdf_temp.groupby(['time'])
         c1_grp = single_c1_frame.groupby(['time'])
 
-        differences10, differences20, calculated_10, calculated_20, values_cdf_10, values_cdf_20 = [], [], [], [], [] ,[]
+        # lists for storing time series to visualize later
+        differences10, differences20, calculated_10, calculated_20, values_cdf_10, values_cdf_20, verify_10, verify_20 = [], [], [], [], [] ,[], [],[]
 
         for timee in time_values:
             try:
@@ -206,9 +207,12 @@ if __name__ == '__main__':
             truncated_850_950.mean_rad = truncated_850_950.mean_rad / 1000
             # Get brightness temperature at 10um
 
-            truncated_10um = helpers.read_wavenumber_slice(small_series_c1, (985,998))
-            truncated_20um = helpers.read_wavenumber_slice(small_series_c1, (529.9, 532))
+            #truncated_10um = helpers.read_wavenumber_slice(small_series_c1, (985,998))
+            #truncated_20um = helpers.read_wavenumber_slice(small_series_c1, (529.9, 532))
+            truncated_10um = helpers.read_wavenumber_slice(small_series_c1, (986,1011))
+            truncated_20um = helpers.read_wavenumber_slice(small_series_c1, (486,511))
             
+
             truncated10um_brighttemp = avg_brightness_temp(truncated_10um)
             truncated20um_brighttemp = avg_brightness_temp(truncated_20um)
 
@@ -218,7 +222,6 @@ if __name__ == '__main__':
 
             intermediary10 = read_wavenumber_slice_set(small_series_cdf, 10)
             intermediary20 = read_wavenumber_slice_set(small_series_cdf, 20)
-
 
             date = str(small_series_c1.iloc[0]['time_offset']).split(' ')  
         
@@ -230,6 +233,15 @@ if __name__ == '__main__':
                 brightness_temps_10 = intermediary10.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
                 brightness_temps_20 = intermediary20.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
                 
+                verifi_10 = intermediary10.iloc[0]['SkyRadianceSpectralAveragesCh1']
+                verifi_20 = intermediary20.iloc[0]['SkyRadianceSpectralAveragesCh1']
+                wnum11 = intermediary10.iloc[0]['wnum11']
+
+                #print(intermediary10)
+                verifi_10_calculated = helpers.brightness_temp(verifi_10, wnum11)
+                #coefficient = helpers.coefficient_calculate(wnum11 * 100, brightness_temps_10, verifi_10/1000)
+                #print(coefficient)
+
                 #differences10.append(abs(brightness_temps_10 - brighttemp_10))
                 #differences20.append(abs(brightness_temps_20 - brighttemp_20))
 
@@ -239,8 +251,11 @@ if __name__ == '__main__':
                 values_cdf_10.append(brightness_temps_10)
                 values_cdf_20.append(brightness_temps_20)
 
+                verify_10.append(verifi_10_calculated)
+                verify_20.append(verifi_20)
+
             except:
-                print(intermediary10.iloc[0]['SkyBrightnessTempSpectralAveragesCh1'])
+                #print(intermediary10.iloc[0]['SkyBrightnessTempSpectralAveragesCh1'])
                 print(brightness_temps_20)
                 print(differences10)
                 continue
@@ -267,6 +282,17 @@ if __name__ == '__main__':
         sns.tsplot(data=values_cdf_10, color="r")
         plt.savefig('./difference_plots/10diff_' + str(date))
         plt.clf()
+        '''
+        sns.tsplot(data=verify_10, color='g')
+        sns.tsplot(data=values_cdf_10, color='r')
+        plt.savefig('./difference_plots/10um/10verify_' + str(date))
+        plt.clf()
+        '''
+        #a = np.array(verify_10)
+        #b = np.array(values_cdf_10)
+
+        #print(a-b)
+        #print(a/b)
 
         sns.tsplot(data=calculated_20, color='g')
         sns.tsplot(data=values_cdf_20, color='r')
