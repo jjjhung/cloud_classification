@@ -189,8 +189,8 @@ if __name__ == '__main__':
         cdf_grp = cdf_temp.groupby(['time'])
         c1_grp = single_c1_frame.groupby(['time'])
 
-        # lists for storing time series to visualize later
-        differences10, differences20, calculated_10, calculated_20, values_cdf_10, values_cdf_20, verify_10, verify_20 = [], [], [], [], [] ,[], [],[]
+        # lists for storing time series to visualize later - not numpy because appending to numpy arrays is very slow
+        differences10, differences20, calculated_10, calculated_20, values_cdf_10, values_cdf_20, verify_10, verify_20, post_averaged_10, post_averaged_20 = [], [], [], [], [] ,[], [],[], [] ,[] 
 
         for timee in time_values:
             try:
@@ -212,6 +212,10 @@ if __name__ == '__main__':
             truncated_10um = helpers.read_wavenumber_slice(small_series_c1, (986,1011))
             truncated_20um = helpers.read_wavenumber_slice(small_series_c1, (486,511))
             
+            #Calculate the brightness temp using the averaged radiances
+            averaged_radiance_10 = truncated_10um['mean_rad'].mean()
+            averaged_radiance_20 = truncated_20um['mean_rad'].mean()
+
 
             truncated10um_brighttemp = avg_brightness_temp(truncated_10um)
             truncated20um_brighttemp = avg_brightness_temp(truncated_20um)
@@ -224,8 +228,8 @@ if __name__ == '__main__':
             intermediary20 = read_wavenumber_slice_set(small_series_cdf, 20)
 
             date = str(small_series_c1.iloc[0]['time_offset']).split(' ')  
-        
-    #        cloudy, season = helpers.cloudify(date, truncated_850_950)
+            
+    #       cloudy, season = helpers.cloudify(date, truncated_850_950)
 
 
             try: # Retrieve cdf calculated brightness temperature, plot differences
@@ -239,6 +243,7 @@ if __name__ == '__main__':
 
                 #print(intermediary10)
                 verifi_10_calculated = helpers.brightness_temp(verifi_10, wnum11)
+                verifi_20_calculated = helpers.brightness_temp(verifi_20, wnum11)
                 #coefficient = helpers.coefficient_calculate(wnum11 * 100, brightness_temps_10, verifi_10/1000)
                 #print(coefficient)
 
@@ -252,8 +257,10 @@ if __name__ == '__main__':
                 values_cdf_20.append(brightness_temps_20)
 
                 verify_10.append(verifi_10_calculated)
-                verify_20.append(verifi_20)
+                verify_20.append(verifi_20_calculated)
 
+                post_averaged_10.append(helpers.brightness_temp(averaged_radiance_10, 998.5))
+                post_averaged_20.append(helpers.brightness_temp(averaged_radiance_20, 498.5))
             except:
                 #print(intermediary10.iloc[0]['SkyBrightnessTempSpectralAveragesCh1'])
                 print(brightness_temps_20)
@@ -261,6 +268,7 @@ if __name__ == '__main__':
                 continue
 
         helpers.create_dir('./difference_plots/10um')
+        helpers.create_dir('./difference_plots/post')
         helpers.create_dir('./difference_plots/20um')
 
         #differences10 = [x for x in differences10 if not math.isnan(x)]
@@ -282,11 +290,28 @@ if __name__ == '__main__':
         sns.tsplot(data=values_cdf_10, color="r")
         plt.savefig('./difference_plots/10diff_' + str(date))
         plt.clf()
+
+        sns.tsplot(data=post_averaged_10, color="g")
+        sns.tsplot(data=values_cdf_10, color="r")
+        plt.savefig('./difference_plots/post/10diff_' + str(date))
+        plt.clf()
+
+        sns.tsplot(data=post_averaged_20, color="g")
+        sns.tsplot(data=values_cdf_20, color="r")
+        plt.savefig('./difference_plots/post/20diff_' + str(date))
+        plt.clf()
+
         '''
         sns.tsplot(data=verify_10, color='g')
         sns.tsplot(data=values_cdf_10, color='r')
         plt.savefig('./difference_plots/10um/10verify_' + str(date))
         plt.clf()
+        
+        sns.tsplot(data=verify_20, color='g')
+        sns.tsplot(data=values_cdf_20, color='r')
+        plt.savefig('./difference_plots/20um/10verify_' + str(date))
+        plt.clf()
+
         '''
         #a = np.array(verify_10)
         #b = np.array(values_cdf_10)
