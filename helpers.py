@@ -22,16 +22,16 @@ def brightness_temp(radiance, wnum):
     '''
     wavenum = wnum * 100 # Convert wavenumber to 1/m
     radiance /= 1000 # Convert mW to W
-    radiance /= -100
+    radiance *= -0.01001
 
     #radiance /= (2*constants.pi**2)
 
     ln_elements = -2 * constants.Planck * (wavenum**3) * (constants.speed_of_light**2) / (radiance)
-    ln_elements += 1
+    #ln_elements += 1
     
     coeff = constants.Planck * constants.speed_of_light * wavenum / constants.Boltzmann 
         
-    divid = coeff / sp.log(ln_elements)
+    divid = coeff / np.log1p(ln_elements)
 
     # Sometimes divid is complex, probably because conversion error from xarray -> dataframe?
     real = divid if not np.iscomplex(divid) else np.real(divid)  
