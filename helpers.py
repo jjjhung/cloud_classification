@@ -30,7 +30,8 @@ def brightness_temp(radiance, wnum):
     #ln_elements += 1
     
     coeff = constants.Planck * constants.speed_of_light * wavenum / constants.Boltzmann 
-        
+    
+    # Numerical stability - log1p(x) does log(x + 1) stably 
     divid = coeff / np.log1p(ln_elements)
 
     # Sometimes divid is complex, probably because conversion error from xarray -> dataframe?
@@ -84,6 +85,24 @@ def load_files(year):
 
     
     return C1_dataframes
+
+def read_netcdf(file, columns_to_keep):
+    '''
+    Opens and converts a netcdf file into pandas dataframe
+
+    Params 
+    =============
+    - file : String name of cdf file
+    - columns_to_keep : List[String] of datacolumns to keep
+
+
+    '''
+    prepended_dir = 'lidar'
+
+    xar = xr.open_dataset(prepended_dir + '/' + file)
+
+    return xar[columns_to_keep].to_dataframe()
+
 
 def read_wavenumber_slice(df, slice_range):
 
