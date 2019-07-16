@@ -1,5 +1,6 @@
 import scipy as sp
 import numpy as np
+import pandas as pd
 import pickle
 import time
 import os
@@ -86,7 +87,7 @@ def load_files(year):
     
     return C1_dataframes
 
-def read_netcdf(file, columns_to_keep):
+def read_LIDAR_netcdf(file, columns_to_keep):
     '''
     Opens and converts a netcdf file into pandas dataframe
 
@@ -101,7 +102,45 @@ def read_netcdf(file, columns_to_keep):
 
     xar = xr.open_dataset(prepended_dir + '/' + file)
 
+
     return xar[columns_to_keep].to_dataframe()
+
+def read_eaeri(years):
+    '''
+    Reads in the C1 datafiles from E-AERI data
+    Returns a dictionary of dataframes with only the mean_rad data, and some datetime metadata
+        of the form dict[date] = (dataframe for that day)_
+
+    '''
+    
+    dataframes = {}
+
+    for year in years:
+        prepended_dir = str(year)
+
+        for file in os.listdir(prepended_dir):
+            if re.search('^[0-9]*(?!C1|C2).cdf', file):
+                date = str(str(file[:6]))
+                C1_filename = date + "C1.cdf"
+
+                eaeri_c1 = xr.open_dataset(prepended_dir + '/' + C1_filename)
+                rad = eaeri_c1[['date','base_time','time_offset','mean_rad']]
+
+                pandified = rad.to_dataframe()
+                pandified['base_time'] = pd.to_datetime(pandified['base_time'])
+
+                dataframes[date] = pandified
+
+    return dataframes                
+
+
+def print_full(df):
+    '''
+    Prints dataframe, displays all data
+
+    '''
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        print(df)
 
 
 def read_wavenumber_slice(df, slice_range):
