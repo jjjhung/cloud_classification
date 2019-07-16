@@ -22,6 +22,7 @@ dataframes = helpers.read_netcdf('ahsrl_20090204T1200_20090205T0000_300s_22.5m.n
 #dataframes = dataframes.reset_index()
 #print(pd.MultiIndex.from_frame(dataframes).names)
 print(dataframes.loc[(4545.0,0,'2009-02-04 12:00:00')])
+print(dataframes.get_level_values(1))
 #print(dataframes.columns.values)
 #plt.imshow(dataframes['radar_dopplervelocity'])
 #plt.show()

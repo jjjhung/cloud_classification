@@ -84,7 +84,8 @@ def load_files(year):
 
     
     return C1_dataframes
-
+def read_netcdf(filename, keep):
+    
 def read_wavenumber_slice(df, slice_range):
 
     '''
