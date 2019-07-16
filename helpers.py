@@ -1,5 +1,6 @@
 import scipy as sp
 import numpy as np
+import pandas as pd
 import pickle
 import time
 import os
@@ -30,7 +31,8 @@ def brightness_temp(radiance, wnum):
     #ln_elements += 1
     
     coeff = constants.Planck * constants.speed_of_light * wavenum / constants.Boltzmann 
-        
+    
+    # Numerical stability - log1p(x) does log(x + 1) stably 
     divid = coeff / np.log1p(ln_elements)
 
     # Sometimes divid is complex, probably because conversion error from xarray -> dataframe?
@@ -84,8 +86,64 @@ def load_files(year):
 
     
     return C1_dataframes
-def read_netcdf(filename, keep):
+
+def read_LIDAR_netcdf(file, columns_to_keep):
+    '''
+    Opens and converts a netcdf file into pandas dataframe
+
+    Params 
+    =============
+    - file : String name of cdf file
+    - columns_to_keep : List[String] of datacolumns to keep
+
+
+    '''
+    prepended_dir = 'lidar'
+
+    xar = xr.open_dataset(prepended_dir + '/' + file)
+
+
+    return xar[columns_to_keep].to_dataframe()
+
+def read_eaeri(years):
+    '''
+    Reads in the C1 datafiles from E-AERI data
+    Returns a dictionary of dataframes with only the mean_rad data, and some datetime metadata
+        of the form dict[date] = (dataframe for that day)_
+
+    '''
     
+    dataframes = {}
+
+    for year in years:
+        prepended_dir = str(year)
+
+        for file in os.listdir(prepended_dir):
+            if re.search('^[0-9]*(?!C1|C2).cdf', file):
+                date = str(str(file[:6]))
+                C1_filename = date + "C1.cdf"
+
+                eaeri_c1 = xr.open_dataset(prepended_dir + '/' + C1_filename)
+                rad = eaeri_c1[['date','base_time','time_offset','mean_rad']]
+
+                pandified = rad.to_dataframe()
+                pandified['base_time'] = pd.to_datetime(pandified['base_time'])
+
+                dataframes[date] = pandified
+
+    return dataframes                
+
+
+def print_full(df):
+    '''
+    Prints dataframe, displays all data
+
+    '''
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        print(df)
+
+
+>>>>>>> 98efdb8a63c4d4101d6ee93aa8ac942777de9b29
 def read_wavenumber_slice(df, slice_range):
 
     '''

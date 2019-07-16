@@ -203,19 +203,22 @@ if __name__ == '__main__':
                 continue
 
             #print(small_series_c1)
+            #print(small_series_cdf)
             truncated_850_950 = helpers.read_wavenumber_slice(small_series_c1, (850,950))
             truncated_850_950.mean_rad = truncated_850_950.mean_rad / 1000
             # Get brightness temperature at 10um
 
             #truncated_10um = helpers.read_wavenumber_slice(small_series_c1, (985,998))
             #truncated_20um = helpers.read_wavenumber_slice(small_series_c1, (529.9, 532))
-            truncated_10um = helpers.read_wavenumber_slice(small_series_c1, (986,1011))
-            truncated_20um = helpers.read_wavenumber_slice(small_series_c1, (486,511))
+
+            truncated_10um = helpers.read_wavenumber_slice(small_series_c1, (987,1011))
+            truncated_20um = helpers.read_wavenumber_slice(small_series_c1, (487,511))
             
             #Calculate the brightness temp using the averaged radiances
             averaged_radiance_10 = truncated_10um['mean_rad'].mean()
             averaged_radiance_20 = truncated_20um['mean_rad'].mean()
 
+            print('Avg Radiance 10: ' + str(averaged_radiance_10))
 
             truncated10um_brighttemp = avg_brightness_temp(truncated_10um)
             truncated20um_brighttemp = avg_brightness_temp(truncated_20um)
@@ -239,6 +242,8 @@ if __name__ == '__main__':
                 
                 verifi_10 = intermediary10.iloc[0]['SkyRadianceSpectralAveragesCh1']
                 verifi_20 = intermediary20.iloc[0]['SkyRadianceSpectralAveragesCh1']
+                
+                print('Avg Radiance Actual 10: ' + str(verifi_10))
                 wnum11 = intermediary10.iloc[0]['wnum11']
 
                 #print(intermediary10)
