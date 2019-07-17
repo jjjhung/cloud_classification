@@ -11,6 +11,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from scipy import constants
+from pathlib import Path
 
 def brightness_temp(radiance, wnum):
     '''
@@ -87,23 +88,33 @@ def load_files(year):
     
     return C1_dataframes
 
-def read_LIDAR_netcdf(file, columns_to_keep):
+def read_LIDAR_netcdf(years, columns_to_keep):
     '''
-    Opens and converts a netcdf file into pandas dataframe
+    Reads in nc files from LIDAR (ahrsl) data
+    Returns a dictionary of dataframes with revelant columns (backscatter coefficient
+        and depolarization ratios), used for determining cloudiness and cloud phase
+        of the form dict[date] = dataframe
+    
 
     Params 
     =============
-    - file : String name of cdf file
+    - years : Selected years to read in 
     - columns_to_keep : List[String] of datacolumns to keep
-
-
     '''
-    prepended_dir = 'lidar'
+    dataframes = {}
 
-    xar = xr.open_dataset(prepended_dir + '/' + file)
+    for year in years:
+        prepended_dir = str(year)
 
+        for file in os.listdir(prepended_dir):
+            if Path('./' + file).suffix == '.nc': # Only read nc filename
+                xar = xr.open_dataset(prepended_dir + '/' + file)
 
-    return xar[columns_to_keep].to_dataframe()
+                date = Path(file).stem
+                print(date)
+                dataframes[date] = xar[columns_to_keep].to_dataframe()
+
+    return dataframes
 
 def read_eaeri(years):
     '''
@@ -143,7 +154,6 @@ def print_full(df):
         print(df)
 
 
->>>>>>> 98efdb8a63c4d4101d6ee93aa8ac942777de9b29
 def read_wavenumber_slice(df, slice_range):
 
     '''
