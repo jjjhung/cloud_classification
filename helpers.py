@@ -111,10 +111,11 @@ def read_LIDAR_netcdf(years, columns_to_keep):
                 xar = xr.open_dataset(prepended_dir + '/' + file)
 
                 date = Path(file).stem
-                print(date)
+                #print(date)
                 dataframes[date] = xar[columns_to_keep].to_dataframe()
 
     return dataframes
+
 
 def read_eaeri(years):
     '''

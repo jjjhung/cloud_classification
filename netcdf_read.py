@@ -11,6 +11,9 @@ import seaborn as sns
 import numpy as numpy
 import matplotlib.pyplot as plt
 
+from ahrsl import Ahrsl
+from eaeri import EAERI
+
 PARAMS = {"LOAD_DATA_FROM_SCRATCH": True, 
           "PLOT_DATA": False,
           "RUN_PROGRAM_FROM_SCRATCH": False}
@@ -23,19 +26,20 @@ keep = ['radar_backscattercrosssection','radar_reflectivity',
 
 # Revelant headers for determining cloudiness and cloud phases
 keep_revelant = ['radar_backscattercrosssection', 'radar_dopplervelocity','linear_depol']
+ahsrl_dataframes = helpers.read_LIDAR_netcdf([2008], keep_revelant)
 
-dataframes = helpers.read_LIDAR_netcdf('ahsrl_20090202T0000_20090202T2300_60s_15m.nc', keep_revelant)
 
 #dataframes = dataframes.reset_index()
 #print(pd.MultiIndex.from_frame(dataframes).names)
-print(dataframes.loc[(4545.0,0,'2009-02-04 12:00:00')])
-print(dataframes.get_level_values(1))
+#print(dataframes.loc[(4545.0,0,'2009-02-04 12:00:00')])
+#print(dataframes.get_level_values(1))
 
 #reformatted = dataframes.reset_index(level=['profile_time','altitude'])
 
 #reformatted_delimited = reformatted[['altitude','profile_time','beta_a_backscat_parallel']]
 
 #print(dataframes[['radar_dopplervelocity']])
+
 '''
 df2 = dataframes[['radar_dopplervelocity']].reset_index('profile_time', drop=True)
 
@@ -48,24 +52,30 @@ plt.clf()
 '''
 
 
-# Plotting function for the profiles
 
-aeri = helpers.read_eaeri(["2008"])
-print(aeri)
+# Plotting function for the profiles
+eaeri_dataframes = helpers.read_eaeri(["2008"])
+
+print(eaeri_dataframes)
+
 for header in keep_revelant:
     print(header)
     #unique = reformatted[header].nunique()
-    #print(header + ' has ' + str(unique) + ' unique elments')
+    #print(header + ' has ' + str(unique) + ' unique elments')000
 
-    df2 = dataframes.reset_index().pivot_table(columns='time', index='altitude',values=header)
-    df2 = df2[::-1] # Columns are in reverse order for some reason. 
-    #df2 = dataframes['']
-    #print(header)
-    print(df2)
-    sns.heatmap(df2)
-    plt.savefig("./heatmaps/" + header + "_heatmap")
-    plt.clf()
 
+
+#Find intersection of days both eaeri and lidar have measurements recorded
+intersect = set(ahsrl_dataframes).intersection(set(eaeri_dataframes))
+ahsrl,eaeri = {},{}
+
+# Keep intersection only for ahrsl data, all data for eaeri data
+for days in intersect:
+    ahsrl[days] = Ahrsl(ahsrl_dataframes[days])
+
+
+for days in eaeri_dataframes:
+    eaeri[days] = EAERI(eaeri_dataframes[days])
 
 
 
