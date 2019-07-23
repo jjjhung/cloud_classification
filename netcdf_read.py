@@ -11,18 +11,21 @@ import seaborn as sns
 import numpy as numpy
 import matplotlib.pyplot as plt
 
-from ahrsl import Ahrsl
-from eaeri import EAERI
+import sys 
+print(sys.path)
+
+import ahrsl as ah
+import eaeri as er
 
 PARAMS = {"LOAD_DATA_FROM_SCRATCH": True, 
           "PLOT_DATA": False,
           "RUN_PROGRAM_FROM_SCRATCH": False}
 
-keep = ['radar_backscattercrosssection','radar_reflectivity',
-'radar_spectralwidth','radar_dopplervelocity','beta_a',
-'circular_depol','linear_depol','profile_circular_depol','profile_linear_depol',
-'beta_a_backscat_parallel','profile_beta_a_backscat_parallel', 
-'beta_a_backscat','profile_beta_a_backscat']
+# keep = ['radar_backscattercrosssection','radar_reflectivity',
+# 'radar_spectralwidth','radar_dopplervelocity','beta_a',
+# 'circular_depol','linear_depol','profile_circular_depol','profile_linear_depol',
+# 'beta_a_backscat_parallel','profile_beta_a_backscat_parallel', 
+# 'beta_a_backscat','profile_beta_a_backscat']
 
 # Revelant headers for determining cloudiness and cloud phases
 keep_revelant = ['radar_backscattercrosssection', 'radar_dopplervelocity','linear_depol']
@@ -56,7 +59,7 @@ plt.clf()
 # Plotting function for the profiles
 eaeri_dataframes = helpers.read_eaeri(["2008"])
 
-print(eaeri_dataframes)
+#print(eaeri_dataframes)
 
 for header in keep_revelant:
     print(header)
@@ -67,15 +70,20 @@ for header in keep_revelant:
 
 #Find intersection of days both eaeri and lidar have measurements recorded
 intersect = set(ahsrl_dataframes).intersection(set(eaeri_dataframes))
-ahsrl,eaeri = {},{}
+ahsrl, eaeri = {},{}
 
-# Keep intersection only for ahrsl data, all data for eaeri data
-for days in intersect:
-    ahsrl[days] = Ahrsl(ahsrl_dataframes[days])
+# Keep intersection only for ahrsl data, since lidar data only useful with corresponding aeri data
+# for days in intersect:
+#     ahsrl[days] = ah.Ahrsl(ahsrl_dataframes[days])
 
 
 for days in eaeri_dataframes:
-    eaeri[days] = EAERI(eaeri_dataframes[days])
+    eaeri[days] = er.EAERI(eaeri_dataframes[days])
+    a = eaeri[days].retrieve_microwindow_averages("2008-11-13 00:08:15")
+    b = er.EAERI.retrieve_microwindow_differences(a)
+
+    print(list(b))
+    break
 
 
 

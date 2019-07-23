@@ -191,8 +191,8 @@ if __name__ == '__main__':
 
 
                 try:
-                    brightness_temps_10 = intermediary.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
-                    brightness_temps_20 = intermediary.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
+                    brightness_temps_10 = intermediary_10.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
+                    brightness_temps_20 = intermediary_20.iloc[0]['SkyBrightnessTempSpectralAveragesCh1']
                     #print(brightness_temps)
                     um10_brightness_temps[season]['All'].append(brightness_temps_10)
                     um10_brightness_temps[season][cloudy].append(brightness_temps_10)

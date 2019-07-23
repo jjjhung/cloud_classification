@@ -8,6 +8,8 @@ import os
 import re
 import time
 import helpers
+import eaeri
+
 import xarray as xr
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -138,13 +140,14 @@ def histogram_plot(data, save_path):
 
 
 #df = xr.open_dataset('./2008/081020C1.cdf').to_dataframe()
-C1_dataframes = helpers.read_obj('C1_dataframes_2008')
-
+#C1_dataframes = helpers.read_obj('C1_dataframes_2008')
+dataframes = helpers.read_eaeri([2008])
 tally = []
-for ind,df in enumerate(C1_dataframes):
-    print(ind)
+for ind,df in enumerate(dataframes):
 
-    temp = df.reset_index()
+    #temp = dataframes[df]
+
+    temp = dataframes[df].reset_index()
     time_values = temp['time'].unique()
     g = temp.groupby(['time'])
 
@@ -154,6 +157,7 @@ for ind,df in enumerate(C1_dataframes):
         title = str(small_series.iloc[0]['time_offset']).split(' ')
         date = str(small_series.iloc[0]['time_offset']).split(' ')
 
+        print(small_series)
         #if not os.path.exists('./' + str('2008') + '_plots/' + title[0]):
         #   os.makedirs('./' + str('2008') + '_plots/' + title[0])
 
@@ -181,7 +185,7 @@ for ind,df in enumerate(C1_dataframes):
         #truncated10um_brighttemp = avg_brightness_temp(truncated_10um)
 
         #print(truncated10um_brighttemp)
-        print(truncated10um_brighttemp['avg_brightness_temp'].mean())
+        #print(truncated10um_brighttemp['avg_brightness_temp'].mean())
         tally += [truncated10um_brighttemp['avg_brightness_temp'].mean()]
 
 histogram_plot(tally, "2008 sample stuff")
