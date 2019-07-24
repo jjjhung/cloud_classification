@@ -82,20 +82,39 @@ for days in eaeri_dataframes:
 
 user_select = []
 while True:
-	inp = raw_input("Enter a classified day (ee to finish) [YYYY-MM-DD HH:MM:SS == (Thick|Thin|Clear)]: ")
-	
-	if inp == "ee":
-		break
+    inp = input("Enter a classified day (ee to finish) [YYYY-MM-DD HH:MM:SS == (thick|thin|clear)]: ")
+    # Sample 2008-11-13 07:14:43 == Thick
+    if inp == "ee":
+        break
 
-	splitted = inp.split(" == ")
-	timestamp = splitted[0]
-	tag = splitted[1]
+    splitted = inp.split(" == ")
+    timestamp = splitted[0]
+    tag = splitted[1]
 
-	# Will pick the closest time to this with a spectra recorded
-	user_select.append((tag,timestamp)) 
+    #Split tag into classes: Thick -> 0; Thin -> 1; Clear -> 2
+    if tag == "thick":
+        tag = 0
+    elif tag == "thin":
+        tag = 1
+    elif tag == "clear":
+        tag = 2
+
+    # Will pick the closest time to this with a spectra recorded
+    user_select.append((tag,timestamp)) 
 
 for tag_pair in user_select:
-	
+    date = tag_pair[1][2:4] + tag_pair[1][5:7] + tag_pair[1][8:10]
+    time = eaeri[date].find_closest_spectra(tag_pair[1])
+
+    BT_features = eaeri[date].retrieve_microwindow_averages(time)
+
+    extracted_features = er.EAERI.retrieve_microwindow_differences(BT_features)
+
+    for window in extracted_features:
+        print(window)
+        
+    Xfeatures.append()
+
 
 #a = eaeri[days].retrieve_microwindow_averages("2008-11-13 00:08:15")
 #b = er.EAERI.retrieve_microwindow_differences(a)

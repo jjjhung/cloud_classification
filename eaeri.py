@@ -1,6 +1,9 @@
 import helpers
 import itertools # Combinations
 
+import numpy as np
+import pandas as pd
+
 class EAERI:
     '''
     Class detailing one day of eaeri observations
@@ -38,7 +41,7 @@ class EAERI:
         for mw in self.microwindows:
             slice_start = mw[0] - mw[1]
             slice_end = mw[0] + mw[1]
-            truncated = self.data.loc[(self.data['wnum1'] >= slice_start) & (self.data['wnum1'] <= slice_end) & (self.data['time_offset'] == '2008-11-10 00:08:30')]
+            truncated = self.data.loc[(self.data['wnum1'] >= slice_start) & (self.data['wnum1'] <= slice_end) & (self.data['time_offset'] == datetime)]
 
             # small_frame = helpers.read_wavenumber_slice(self.data, (slice_start, slice_end))
             
@@ -59,9 +62,29 @@ class EAERI:
         Returns datetime of found spectra
         ''' 
 
-        spectra_times = self.data['time_offset']
-        time_offset = spectra_times - datetime
+        dt = pd.Timestamp(datetime)
+        spectra_times = self.data['time_offset'].unique()
+        #print(spectra_times)
 
+        offsets = []
+        for time in spectra_times:
+
+            ttime = pd.Timestamp(time)
+            time_offset = pd.Timedelta(ttime- dt).seconds
+
+            offsets.append(time_offset)
+
+        min_index = np.argmin(offsets)
+        min_offset = offsets[min_index]
+
+        if min_index > 0 and ((86400 - offsets[min_index - 1]) < min_offset):
+            min_index -= 1
+            min_offset = offsets[min_index]
+
+        #print(min_offset)
+        #print(spectra_times[min_index])
+
+        return spectra_times[min_index]
         #Try self.data.time_offset - datetime directly
 
 
@@ -82,12 +105,12 @@ class EAERI:
 
         # Need ordered list since BT_features is a hashtable
         features = list(BT_features)
-        BT_differences = {}
+        BT_differences = []
 
         # Compute differences between each pair elements in the feature space
         #   there are 14 choose 2 pairs
         for i,comb in enumerate(itertools.combinations(features, 2)):
-            BT_differences[comb] = abs(BT_features[comb[0]] - BT_features[comb[1]])
+            BT_differences.append((comb, abs(BT_features[comb[0]] - BT_features[comb[1]])))
 
         return BT_differences
 
