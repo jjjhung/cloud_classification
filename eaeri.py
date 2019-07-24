@@ -40,7 +40,7 @@ class EAERI:
             slice_end = mw[0] + mw[1]
             truncated = self.data.loc[(self.data['wnum1'] >= slice_start) & (self.data['wnum1'] <= slice_end) & (self.data['time_offset'] == '2008-11-10 00:08:30')]
 
-#            small_frame = helpers.read_wavenumber_slice(self.data, (slice_start, slice_end))
+            # small_frame = helpers.read_wavenumber_slice(self.data, (slice_start, slice_end))
             
             # Convert radiance W to mW
             truncated.mean_rad /= 1000
@@ -50,6 +50,22 @@ class EAERI:
             BT_features[mw[0]] = helpers.brightness_temp(averaged, mw[0])
 
         return BT_features
+
+
+    def find_closest_spectra(self, datetime):
+        '''
+        Searches data for the closest spectra taken to the provided time
+
+        Returns datetime of found spectra
+        ''' 
+
+        spectra_times = self.data['time_offset']
+        time_offset = spectra_times - datetime
+
+        #Try self.data.time_offset - datetime directly
+
+
+
 
 
     @staticmethod
@@ -68,9 +84,9 @@ class EAERI:
         features = list(BT_features)
         BT_differences = {}
 
+        # Compute differences between each pair elements in the feature space
+        #   there are 14 choose 2 pairs
         for i,comb in enumerate(itertools.combinations(features, 2)):
-
-            #print(i,comb)
             BT_differences[comb] = abs(BT_features[comb[0]] - BT_features[comb[1]])
 
         return BT_differences

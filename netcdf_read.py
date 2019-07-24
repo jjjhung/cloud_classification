@@ -59,7 +59,7 @@ plt.clf()
 # Plotting function for the profiles
 eaeri_dataframes = helpers.read_eaeri(["2008"])
 
-#print(eaeri_dataframes)
+Xfeatures = []
 
 for header in keep_revelant:
     print(header)
@@ -79,11 +79,27 @@ ahsrl, eaeri = {},{}
 
 for days in eaeri_dataframes:
     eaeri[days] = er.EAERI(eaeri_dataframes[days])
-    a = eaeri[days].retrieve_microwindow_averages("2008-11-13 00:08:15")
-    b = er.EAERI.retrieve_microwindow_differences(a)
 
-    print(list(b))
-    break
+user_select = []
+while True:
+	inp = raw_input("Enter a classified day (ee to finish) [YYYY-MM-DD HH:MM:SS == (Thick|Thin|Clear)]: ")
+	
+	if inp == "ee":
+		break
+
+	splitted = inp.split(" == ")
+	timestamp = splitted[0]
+	tag = splitted[1]
+
+	# Will pick the closest time to this with a spectra recorded
+	user_select.append((tag,timestamp)) 
+
+for tag_pair in user_select:
+	
+
+#a = eaeri[days].retrieve_microwindow_averages("2008-11-13 00:08:15")
+#b = er.EAERI.retrieve_microwindow_differences(a)
+
 
 
 
