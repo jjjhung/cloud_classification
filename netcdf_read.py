@@ -107,19 +107,23 @@ while True:
         tag = 2
 
     # Will pick the closest time to this with a spectra recorded
-    user_select.append((tag,timestamp)) 
+#     user_select.append((tag,timestamp)) 
 
-for tag_pair in user_select:
-    date = tag_pair[1][2:4] + tag_pair[1][5:7] + tag_pair[1][8:10]
-    time = eaeri[date].find_closest_spectra(tag_pair[1])
+# for tag_pair in user_select:
+    date = timestamp[2:4] + timestamp[5:7] + timestamp[8:10]
+    time = eaeri[date].find_closest_spectra(tag)
 
-    BT_features = eaeri[date].retrieve_microwindow_averages(time)
+    kep = input("The closest recorded spectra found was (Keep[y/n]): " + str(time))
+    if kep == 'y':
+        BT_features = eaeri[date].retrieve_microwindow_averages(time)
 
-    extracted_features = er.EAERI.retrieve_microwindow_differences(BT_features)
+        extracted_features = er.EAERI.retrieve_microwindow_differences(BT_features)
 
-    for window in extracted_features:
-        Xfeatures.append(window[1])
-        Xtags.append(tag_pair[0])
+        for window in extracted_features:
+            Xfeatures.append(window[1])
+            Xtags.append(tag_pair[0])
+    else:
+        continue
 
 helpers.save_obj(Xfeatures, "features")
 helpers.save_obj(Xtags, "tags")
