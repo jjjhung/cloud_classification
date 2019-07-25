@@ -19,7 +19,8 @@ import eaeri as er
 
 PARAMS = {"LOAD_DATA_FROM_SCRATCH": True, 
           "PLOT_DATA": False,
-          "RUN_PROGRAM_FROM_SCRATCH": False}
+          "RUN_PROGRAM_FROM_SCRATCH": False,
+          "LOAD_PREVIOUS_TAGS": False}
 
 # keep = ['radar_backscattercrosssection','radar_reflectivity',
 # 'radar_spectralwidth','radar_dopplervelocity','beta_a',
@@ -59,7 +60,12 @@ plt.clf()
 # Plotting function for the profiles
 eaeri_dataframes = helpers.read_eaeri(["2008"])
 
-Xfeatures = []
+if PARAMS['LOAD_PREVIOUS_TAGS']:
+    Xfeatures = helpers.read_obj("features")
+    Xtags = helpers.read_obj("tags")
+else:
+    Xfeatures, Xtags = [], []
+
 
 for header in keep_revelant:
     print(header)
@@ -78,6 +84,7 @@ ahsrl, eaeri = {},{}
 
 
 for days in eaeri_dataframes:
+    print(days)
     eaeri[days] = er.EAERI(eaeri_dataframes[days])
 
 user_select = []
@@ -111,9 +118,11 @@ for tag_pair in user_select:
     extracted_features = er.EAERI.retrieve_microwindow_differences(BT_features)
 
     for window in extracted_features:
-        print(window)
-        
-    Xfeatures.append()
+        Xfeatures.append(window[1])
+        Xtags.append(tag_pair[0])
+
+helpers.save_obj(Xfeatures, "features")
+helpers.save_obj(Xtags, "tags")
 
 
 #a = eaeri[days].retrieve_microwindow_averages("2008-11-13 00:08:15")
