@@ -63,6 +63,7 @@ class EAERI:
         ''' 
 
         dt = pd.Timestamp(datetime)
+
         spectra_times = self.data['time_offset'].unique()
         #print(spectra_times)
 
@@ -70,7 +71,7 @@ class EAERI:
         for time in spectra_times:
 
             ttime = pd.Timestamp(time)
-            time_offset = pd.Timedelta(ttime- dt).seconds
+            time_offset = pd.Timedelta(ttime - dt).seconds
 
             offsets.append(time_offset)
 

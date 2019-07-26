@@ -128,6 +128,7 @@ def read_eaeri(years):
     dataframes = {}
 
     for year in years:
+        #prepended_dir = '/home/jhung/CDFs/' + str(year)
         prepended_dir = str(year)
 
         for file in os.listdir(prepended_dir):
