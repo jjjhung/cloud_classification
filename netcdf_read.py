@@ -22,11 +22,6 @@ PARAMS = {"LOAD_DATA_FROM_SCRATCH": True,
           "RUN_PROGRAM_FROM_SCRATCH": False,
           "LOAD_PREVIOUS_TAGS": True}
 
-# keep = ['radar_backscattercrosssection','radar_reflectivity',
-# 'radar_spectralwidth','radar_dopplervelocity','beta_a',
-# 'circular_depol','linear_depol','profile_circular_depol','profile_linear_depol',
-# 'beta_a_backscat_parallel','profile_beta_a_backscat_parallel', 
-# 'beta_a_backscat','profile_beta_a_backscat']
 
 # Revelant headers for determining cloudiness and cloud phases
 keep_revelant = ['radar_backscattercrosssection', 'radar_dopplervelocity','linear_depol']
@@ -58,8 +53,9 @@ plt.clf()
 
 
 # Plotting function for the profiles
-eaeri_dataframes = helpers.read_eaeri(["2008"])
-#print(eaeri_dataframes)
+
+eaeri_dataframes = helpers.read_eaeri(["2009"])
+
 if PARAMS['LOAD_PREVIOUS_TAGS']:
     Xfeatures = helpers.read_obj("features")
     Xtags = helpers.read_obj("tags")
@@ -103,6 +99,7 @@ while True:
 
     timestamp = str(splitted[0])
     tag = splitted[1]
+
     #Split tag into classes: Thick -> 0; Thin -> 1; Clear -> 2
     if tag == "thick":
         tag = 0
@@ -118,6 +115,7 @@ while True:
     date = timestamp[2:4] + timestamp[5:7] + timestamp[8:10]
     try:
         time = eaeri[date].find_closest_spectra(timestamp)
+
     except KeyError:
         print("No spectra recorded for specified date")
         continue

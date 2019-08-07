@@ -79,3 +79,4 @@ while True:
     input_features = np.array(extracted_features)[:,1].reshape(1,91)
     print(np.shape(input_features))
     print(svc.predict(input_features))
+
