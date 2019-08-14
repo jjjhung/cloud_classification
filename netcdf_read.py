@@ -10,6 +10,7 @@ import pandas as pd
 import seaborn as sns
 import numpy as numpy
 import matplotlib.pyplot as plt
+import time
 
 import sys 
 #print(sys.path)
@@ -22,6 +23,21 @@ PARAMS = {"LOAD_DATA_FROM_SCRATCH": True,
           "RUN_PROGRAM_FROM_SCRATCH": False,
           "LOAD_PREVIOUS_TAGS": True}
 
+
+def find_next_avaliable(eaeri_data, day, month, year):
+    for check in range(int(day)+1,33):
+        check_next = year + month + str(check).rjust(2,'0')
+        if check_next in eaeri_data:
+            print("Now classifying: " + check_next)
+            return check_next
+
+        if check == 32:
+            if not month == '12':
+                return find_next_avaliable(eaeri_data, '00', str(int(month)+1).rjust(2,'0'), year)
+            else:
+                # If loaded more than one year into data, can run
+                # return find_next_avaliable(eaeri_data, 0, 0, str(int(year)+1).rjust(2,'0') ) instead
+                return "NULL"
 
 # Revelant headers for determining cloudiness and cloud phases
 keep_revelant = ['radar_backscattercrosssection', 'radar_dopplervelocity','linear_depol']
@@ -57,8 +73,8 @@ plt.clf()
 eaeri_dataframes = helpers.read_eaeri(["2009"])
 
 if PARAMS['LOAD_PREVIOUS_TAGS']:
-    Xfeatures = helpers.read_obj("features")
-    Xtags = helpers.read_obj("tags")
+    Xfeatures = helpers.read_obj("features_2")
+    Xtags = helpers.read_obj("tags_2")
 else:
     Xfeatures, Xtags = [], []
 
@@ -84,8 +100,12 @@ for days in eaeri_dataframes:
     eaeri[days] = er.EAERI(eaeri_dataframes[days])
 
 user_select = []
+
+#all_eaeri_days = list(eaeri)
+#all_eaeri_days_seconds = [time.gmtime(x) for x in all_eaeri_days]
+
 while True:
-    inp = input("Enter a classified day (ee to finish|spectra to see day spectra) [YYYY-MM-DD HH:MM:SS == (thick|thin|clear)]: ")
+    inp = input("Enter a classified day (ee to finish|spectra to see day spectra) [YYMMDD]: ")
     # Sample 2008-11-13 07:14:43 == Thick
     if inp == "ee":
         break
@@ -95,46 +115,69 @@ while True:
 
         print(eaeri[inp2].data['time_offset'].unique())
         continue
-    splitted = inp.split(" == ")
 
-    timestamp = str(splitted[0])
-    tag = splitted[1]
+    while True:
+        time_check = input("Enter time to classify (xx:xx:xx thin) (n to jump to next day): ")
 
-    #Split tag into classes: Thick -> 0; Thin -> 1; Clear -> 2
-    if tag == "thick":
-        tag = 0
-    elif tag == "thin":
-        tag = 1
-    elif tag == "clear":
-        tag = 2
+        if time_check == 'n':
+            day = inp[4:6]
+            month = inp[2:4]
+            year = inp[:2]
+            # timestring = inp[4:6] + inp[2:4] + inp[:2]
+            # struct_time = time.strptime(timestring, "%d %m %y") 
 
-    # Will pick the closest time to this with a spectra recorded
-#     user_select.append((tag,timestamp)) 
+            # current_time = time.gmtime(struct_time)
 
-# for tag_pair in user_select:
-    date = timestamp[2:4] + timestamp[5:7] + timestamp[8:10]
-    try:
-        time = eaeri[date].find_closest_spectra(timestamp)
+            # closest_day = np.argmin(all_eaeri_days_seconds - current_time)
+            
+            next_avaliable_day = find_next_avaliable(eaeri, day, month, year)
 
-    except KeyError:
-        print("No spectra recorded for specified date")
-        continue
+            if next_avaliable_day != "NULL":
+                inp = next_avaliable_day  
+                continue
+            else:
+                print("Reached end of year - no more days to classify - exiting.")
+                sys.exit()
+            
 
-    kep = input("The closest recorded spectra found was (Keep[y/n]): " + str(time))
-    if kep == 'y':
-        BT_features = eaeri[date].retrieve_microwindow_averages(time)
+        splitted = time_check.split(" ")
 
-        extracted_features = er.EAERI.retrieve_microwindow_differences(BT_features)
-        Xfeatures.append([])
-        for window in extracted_features:
-            Xfeatures[-1].append(window[1])
-        
-        Xtags.append(tag)
-    else:
-        continue
+        timestamp = str(splitted[0])
+        tag = splitted[1]
 
-    helpers.save_obj(Xfeatures, "features")
-    helpers.save_obj(Xtags, "tags")
+
+        #Split tag into classes: Thick -> 0; Thin -> 1; Clear -> 2
+        if tag == "thick":
+            tag = 0
+        elif tag == "thin":
+            tag = 1
+        elif tag == "clear":
+            tag = 2
+
+        # Will pick the closest time to this with a spectra recorded
+        try:
+            time = eaeri[inp].find_closest_spectra(timestamp)
+
+        except KeyError:
+            print("No spectra recorded for specified date")
+            continue
+
+        kep = input("The closest recorded spectra found was (Keep[y/n]): " + str(time))
+        if kep == 'y':
+            BT_features = eaeri[inp].retrieve_microwindow_averages(time)
+
+            extracted_features = er.EAERI.retrieve_microwindow_differences(BT_features)
+            Xfeatures.append([])
+            for window in extracted_features:
+                Xfeatures[-1].append(window[1])
+            
+            Xtags.append(tag)
+        else:
+            continue
+
+        helpers.save_obj(Xfeatures, "features_2")
+        helpers.save_obj(Xtags, "tags_2")
+
 
 
 #a = eaeri[days].retrieve_microwindow_averages("2008-11-13 00:08:15")
