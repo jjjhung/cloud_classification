@@ -8,7 +8,7 @@ import re
 import xarray as xr
 import pandas as pd
 import seaborn as sns
-import numpy as numpy
+import numpy as np
 import matplotlib.pyplot as plt
 import time
 
@@ -167,11 +167,16 @@ while True:
             BT_features = eaeri[inp].retrieve_microwindow_averages(time)
 
             extracted_features = er.EAERI.retrieve_microwindow_differences(BT_features)
-            Xfeatures.append([])
-            for window in extracted_features:
-                Xfeatures[-1].append(window[1])
             
-            Xtags.append(tag)
+            ft = np.array(extracted_features).T
+            Xfeatures = np.append(Xfeatures, ft, axis=0)
+            #print(np.shape(extracted_features))
+            #print(np.shape(Xfeatures))
+#            Xfeatures = np.append([Xfeatures,[])
+ #           for window in extracted_features:
+ #               Xfeatures[-1].append(window[1])
+            Xtags = np.append(Xtags, [tag])
+            #Xtags.append(tag)
         else:
             continue
 
