@@ -169,14 +169,17 @@ while True:
             extracted_features = er.EAERI.retrieve_microwindow_differences(BT_features)
             
             ft = np.array(extracted_features).T
-            Xfeatures = np.append(Xfeatures, ft, axis=0)
-            #print(np.shape(extracted_features))
+            print(np.shape(ft))
+            Xfeatures = np.append(Xfeatures, np.array([ft[0]]), axis=0)
+            print(np.shape(Xfeatures))            
+#print(np.shape(extracted_features))
             #print(np.shape(Xfeatures))
 #            Xfeatures = np.append([Xfeatures,[])
  #           for window in extracted_features:
  #               Xfeatures[-1].append(window[1])
             Xtags = np.append(Xtags, [tag])
-            #Xtags.append(tag)
+            print(np.shape(Xtags))           
+ #Xtags.append(tag)
         else:
             continue
 
