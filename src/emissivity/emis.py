@@ -9,6 +9,7 @@ import readers.ncep as ncep_reader
 
 
 import processing.eaeri as eaeri_pro
+import helpers.general as tools
 
 #from readers import lbldis,tccon,eaeri,gruan
 #from readers import eaeri
@@ -31,24 +32,29 @@ print(clear_spectra)
 # NDACC ch4 co n2o o3 altitude pressure
 
 #All profiles go high to low
-ndacc_O3_all = ndacc_reader.read_hdf('ndacc/','O3')
-O3_retr_time = ndacc_reader.find_closest_retrival(ndac_O3, clear_spectra_time)
-ndacc_O3 = ndacc_O3_all['O3.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR']['2009-06-20 15:08:00'].values[0]
+# ndacc_O3_all = ndacc_reader.read_hdf('ndacc/','O3')
+# O3_retr_time = ndacc_reader.find_closest_retrival(ndac_O3, clear_spectra_time)
+# ndacc_O3 = ndacc_O3_all['O3.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR']['2009-06-20 15:08:00'].values[0]
 
-ndacc_CO_all = ndacc_reader.read_hdf('ndacc/','CO')
-CO_retr_time = ndacc_reader.find_closest_retrival(ndac_CO, clear_spectra_time)
-ndacc_CO = ndacc_CO_all['CO.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR']['2009-06-20 15:08:00'].values[0]
+# ndacc_CO_all = ndacc_reader.read_hdf('ndacc/','CO')
+# CO_retr_time = ndacc_reader.find_closest_retrival(ndac_CO, clear_spectra_time)
+# ndacc_CO = ndacc_CO_all['CO.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR']['2009-06-20 15:08:00'].values[0]
 
-ndacc_N2O_all = ndacc_reader.read_hdf('ndacc/','N2O')
-N2O_retr_time = ndacc_reader.find_closest_retrival(ndac_N2O, clear_spectra_time)
-ndacc_N2O = ndacc_N2O_all['N2O.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR']['2009-06-20 15:08:00'].values[0]
+# ndacc_N2O_all = ndacc_reader.read_hdf('ndacc/','N2O')
+# N2O_retr_time = ndacc_reader.find_closest_retrival(ndac_N2O, clear_spectra_time)
+# ndacc_N2O = ndacc_N2O_all['N2O.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR']['2009-06-20 15:08:00'].values[0]
 
-ndacc_CH4_all = ndacc_reader.read_hdf('ndacc/','CH4')
-CH4_retr_time = ndacc_reader.find_closest_retrival(ndac_CH4, clear_spectra_time)
-ndacc_CH4 = ndacc_CH4_all['CH4.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR']['2009-06-20 15:08:00'].values[0]
+# ndacc_CH4_all = ndacc_reader.read_hdf('ndacc/','CH4')
+# CH4_retr_time = ndacc_reader.find_closest_retrival(ndac_CH4, clear_spectra_time)
+# ndacc_CH4 = ndacc_CH4_all['CH4.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR']['2009-06-20 15:08:00'].values[0]
 
-altitude = ndacc_O3_all['ALTITUDE']['2009-06-20 15:08'].values[0] #High to low
-pressure = ndacc_O3_all['PRESSURE_INDEPENDENT']['2009-06-20 15:08'].values[0] 
+ndacc_O3 = tools.read_obj('O3')
+ndacc_CO = tools.read_obj('CO')
+ndacc_CH4 = tools.read_obj('CH4')
+ndacc_N2O = tools.read_obj('N2O')
+
+altitude = tools.read_obj('ALTITUDE') #ndacc_O3_all['ALTITUDE']['2009-06-20 15:08'].values[0] #High to low
+pressure = tools.read_obj('PRESSURE') #ndacc_O3_all['PRESSURE_INDEPENDENT']['2009-06-20 15:08'].values[0]
 
 
 # CO2 from TCCON

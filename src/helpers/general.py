@@ -25,7 +25,7 @@ def save_obj(obj, name):
     
     '''
     create_dir('pickle')
-    file_handler = open('./pickle/' + name + '.obj', 'wb')
+    file_handler = open('./pickled_files/' + name + '.obj', 'wb')
     pickle.dump(obj, file_handler)
 
 def read_obj(name):
@@ -34,7 +34,7 @@ def read_obj(name):
     Returns object
 
     '''
-    file_handler = open('./pickle/' + name + '.obj', 'rb')
+    file_handler = open('./pickled_files/' + name + '.obj', 'rb')
     obj = pickle.load(file_handler)
 
     return obj
